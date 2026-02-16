@@ -1,0 +1,1895 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tết Nguyên Đán 2026 - Countdown</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: #1a0000; overflow-x: hidden; }
+  #canvas-wrap {
+    position: relative; width: 100vw; height: 100vh;
+    overflow: hidden;
+  }
+  canvas { display: block; }
+  #fw-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    z-index: 50; pointer-events: none;
+  }
+  #wishes {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a0000 0%, #200808 15%, #2d0a0a 30%, #3d1515 50%, #2d0a0a 70%, #1a0000 100%);
+    padding: 80px 20px 120px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #wishes::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(255,150,50,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 60%, rgba(255,100,80,0.03) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(255,200,100,0.03) 0%, transparent 40%);
+    pointer-events: none;
+  }
+  #wishes h2 {
+    font-family: 'Georgia', serif;
+    font-size: clamp(36px, 5vw, 68px);
+    color: #ffd700;
+    text-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,150,0,0.2);
+    margin-bottom: 15px;
+    position: relative;
+  }
+  .wishes-subtitle {
+    font-family: 'Georgia', serif;
+    font-size: clamp(16px, 2vw, 22px);
+    color: rgba(255, 200, 100, 0.5);
+    margin-bottom: 50px;
+    letter-spacing: 4px;
+  }
+  .wishes-divider {
+    width: 200px; height: 2px; margin: 0 auto 50px;
+    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.5), transparent);
+    position: relative;
+  }
+  .wishes-divider::after {
+    content: '◆'; position: absolute; top: -10px; left: 50%;
+    transform: translateX(-50%); color: rgba(255,200,50,0.5);
+    font-size: 14px; background: #2d0a0a; padding: 0 10px;
+  }
+  .wish-card {
+    max-width: 700px; margin: 0 auto 45px;
+    background: linear-gradient(135deg, rgba(120,20,20,0.5), rgba(80,10,10,0.4));
+    border: 1px solid rgba(255, 200, 50, 0.15);
+    border-radius: 24px;
+    padding: 45px 55px;
+    opacity: 0; transform: translateY(50px) scale(0.95);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+  }
+  .wish-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,200,100,0.04), transparent);
+    pointer-events: none; border-radius: 24px 24px 0 0;
+  }
+  .wish-card::after {
+    content: '';
+    position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.4), transparent);
+  }
+  .wish-card.visible {
+    opacity: 1; transform: translateY(0) scale(1);
+  }
+  .wish-card .wish-icon {
+    font-size: 56px; margin-bottom: 18px; display: block;
+    filter: drop-shadow(0 0 15px rgba(255,200,0,0.3));
+  }
+  .wish-card p {
+    font-family: 'Georgia', serif;
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: #ffe0a0;
+    line-height: 1.8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  .wish-card .wish-author {
+    margin-top: 15px;
+    font-size: 16px;
+    color: rgba(255, 200, 100, 0.5);
+    font-style: italic;
+  }
+  .wishes-footer {
+    margin-top: 60px;
+    padding: 40px;
+    font-family: 'Georgia', serif;
+    color: rgba(255, 200, 100, 0.4);
+    font-size: 18px;
+  }
+  .wishes-footer .footer-ornament {
+    font-size: 28px;
+    margin-bottom: 15px;
+    display: block;
+    letter-spacing: 15px;
+  }
+  #scroll-hint {
+    display: none;
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255, 200, 100, 0.7);
+    font-family: 'Georgia', serif;
+    font-size: 18px;
+    animation: bounce 2s infinite;
+    z-index: 100;
+    pointer-events: none;
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-12px); }
+  }
+  #download {
+    position: fixed; bottom: 30px; right: 30px;
+    padding: 14px 28px; background: linear-gradient(135deg, #d4af37, #f5d060);
+    color: #8b0000; border: none; border-radius: 30px;
+    font-size: 16px; font-weight: bold; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(212,175,55,0.5);
+    z-index: 100; transition: all 0.3s;
+    font-family: 'Georgia', serif;
+  }
+  #download:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(212,175,55,0.7); }
+
+  /* ============ LÌ XÌ SECTION ============ */
+  #lixi-section {
+    display: none;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #1a0000 0%, #2a0505 20%, #3d1010 40%, #4a1515 55%, #3d1010 70%, #2a0505 85%, #1a0000 100%);
+    padding: 80px 20px 120px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  #lixi-section::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background:
+      radial-gradient(ellipse at 30% 30%, rgba(255,80,30,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 50%, rgba(255,180,50,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 70%, rgba(255,100,60,0.03) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .lixi-intro { margin-bottom: 50px; position: relative; }
+  .lixi-above-text {
+    font-size: 24px; color: rgba(255,200,50,0.4);
+    margin-bottom: 20px; letter-spacing: 12px;
+    font-family: 'Georgia', serif;
+  }
+  .lixi-title {
+    font-family: 'Georgia', serif;
+    font-size: clamp(32px, 5vw, 62px);
+    color: #ffd700;
+    text-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,150,0,0.2);
+    margin-bottom: 15px;
+  }
+  .lixi-desc {
+    font-family: 'Georgia', serif;
+    font-size: clamp(14px, 2vw, 20px);
+    color: rgba(255,200,100,0.5);
+    letter-spacing: 2px;
+  }
+  .lixi-intro-divider {
+    width: 150px; height: 1px; margin: 30px auto 0;
+    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.4), transparent);
+  }
+
+  /* === Bao Lì Xì === */
+  .lixi-envelope {
+    position: relative;
+    width: 280px; height: 420px;
+    margin: 0 auto 50px;
+    cursor: pointer;
+    perspective: 800px;
+    transition: transform 0.3s ease;
+  }
+  .lixi-envelope:hover { transform: scale(1.05); }
+  .lixi-envelope:active { transform: scale(0.98); }
+  .lixi-envelope.opened { cursor: default; pointer-events: none; }
+  .lixi-envelope.opened:hover { transform: none; }
+
+  .lixi-body {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: linear-gradient(160deg, #e83030 0%, #cc2020 30%, #b01818 60%, #991515 100%);
+    border-radius: 16px;
+    box-shadow:
+      0 8px 40px rgba(0,0,0,0.5),
+      0 0 60px rgba(255,50,30,0.15),
+      inset 0 1px 0 rgba(255,255,255,0.1);
+    overflow: hidden;
+    z-index: 2;
+  }
+  .lixi-border-pattern {
+    position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
+    border: 2px solid rgba(255,200,50,0.35);
+    border-radius: 12px;
+    pointer-events: none;
+  }
+  .lixi-border-pattern::before {
+    content: '';
+    position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
+    border: 1px solid rgba(255,200,50,0.15);
+    border-radius: 10px;
+  }
+
+  .lixi-seal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -60%);
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, #ffd700, #e6a800, #cc8800);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 72px; font-weight: bold;
+    color: #8b0000;
+    box-shadow:
+      0 4px 20px rgba(255,200,0,0.4),
+      0 0 40px rgba(255,200,0,0.2),
+      inset 0 -2px 6px rgba(0,0,0,0.15),
+      inset 0 2px 4px rgba(255,255,200,0.3);
+    z-index: 5;
+    font-family: 'Georgia', serif;
+  }
+
+  .lixi-text-front {
+    position: absolute;
+    bottom: 35px; left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 4;
+  }
+  .lixi-front-top, .lixi-front-bottom {
+    display: block;
+    font-family: 'Georgia', serif;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .lixi-front-top { font-size: 22px; letter-spacing: 6px; margin-bottom: 4px; }
+  .lixi-front-bottom { font-size: 20px; letter-spacing: 6px; }
+
+  /* Corner ornaments */
+  .lixi-corner {
+    position: absolute; width: 30px; height: 30px; z-index: 4;
+    border-color: rgba(255,200,50,0.5); border-style: solid;
+  }
+  .lixi-corner-tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
+  .lixi-corner-tr { top: 20px; right: 20px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
+  .lixi-corner-bl { bottom: 20px; left: 20px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
+  .lixi-corner-br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+
+  /* Flap (top part) */
+  .lixi-flap {
+    position: absolute;
+    top: -2px; left: 0; width: 100%;
+    height: 130px;
+    z-index: 6;
+    transform-origin: top center;
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .lixi-flap-inner {
+    width: 100%; height: 100%;
+    background: linear-gradient(180deg, #d42828 0%, #c02020 100%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    border-radius: 16px 16px 0 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    position: relative;
+  }
+  .lixi-flap-inner::after {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+  .lixi-envelope.opened .lixi-flap {
+    transform: rotateX(180deg);
+  }
+
+  /* Shine effect */
+  .lixi-shine {
+    position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,200,0.15) 50%, transparent 70%);
+    z-index: 7; pointer-events: none;
+    animation: lixiShine 4s ease-in-out infinite;
+    border-radius: 16px;
+  }
+  @keyframes lixiShine {
+    0%, 100% { left: -100%; }
+    50% { left: 150%; }
+  }
+
+  .lixi-tap-hint {
+    position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
+    font-family: 'Georgia', serif;
+    font-size: 16px; color: rgba(255,200,100,0.6);
+    animation: lixiPulse 2s ease-in-out infinite;
+    white-space: nowrap;
+  }
+  .lixi-envelope.opened .lixi-tap-hint { display: none; }
+  @keyframes lixiPulse {
+    0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
+  }
+
+  /* === Opened Content === */
+  .lixi-content {
+    display: none;
+    max-width: 650px; margin: 0 auto;
+    opacity: 0;
+    transform: translateY(40px);
+    animation: lixiReveal 1s ease forwards;
+    animation-delay: 0.5s;
+  }
+  .lixi-content.show {
+    display: block;
+  }
+  @keyframes lixiReveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .lixi-money-reveal { text-align: center; }
+
+  .lixi-congrats {
+    font-family: 'Georgia', serif;
+    font-size: clamp(24px, 4vw, 40px);
+    color: #ffd700;
+    text-shadow: 0 0 30px rgba(255,200,0,0.5);
+    margin-bottom: 20px;
+    animation: congratsPulse 2s ease-in-out infinite;
+  }
+  @keyframes congratsPulse {
+    0%, 100% { text-shadow: 0 0 30px rgba(255,200,0,0.5); }
+    50% { text-shadow: 0 0 50px rgba(255,200,0,0.8), 0 0 80px rgba(255,150,0,0.3); }
+  }
+
+  .lixi-amount-wrap {
+    position: relative;
+    display: inline-block;
+    padding: 25px 60px;
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, rgba(140,20,20,0.6), rgba(80,8,8,0.5));
+    border: 2px solid rgba(255,200,50,0.3);
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .lixi-amount-wrap::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,255,200,0.06), transparent);
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+  }
+
+  .lixi-amount {
+    font-family: 'Georgia', serif;
+    font-size: clamp(48px, 10vw, 90px);
+    font-weight: bold;
+    background: linear-gradient(135deg, #fff5c8, #ffd700, #e6a800, #ffd700, #fff5c8);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 0 20px rgba(255,200,0,0.5));
+    animation: moneyShimmer 3s ease-in-out infinite;
+    letter-spacing: 3px;
+  }
+  @keyframes moneyShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+  .lixi-currency {
+    font-size: 0.5em;
+    vertical-align: super;
+  }
+
+  .lixi-divider-gold {
+    width: 200px; height: 2px; margin: 0 auto 35px;
+    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.5), transparent);
+    position: relative;
+  }
+  .lixi-divider-gold::after {
+    content: '◆';
+    position: absolute; top: -10px; left: 50%;
+    transform: translateX(-50%);
+    color: rgba(255,200,50,0.5);
+    font-size: 14px;
+    background: linear-gradient(180deg, #3d1010, #4a1515);
+    padding: 0 12px;
+  }
+
+  .lixi-meaning { position: relative; }
+
+  .meaning-title {
+    font-family: 'Georgia', serif;
+    font-size: clamp(20px, 3vw, 30px);
+    color: #ffd700;
+    text-shadow: 0 0 20px rgba(255,200,0,0.3);
+    margin-bottom: 30px;
+    letter-spacing: 3px;
+  }
+
+  .meaning-card {
+    max-width: 500px; margin: 0 auto 16px;
+    padding: 18px 30px;
+    background: linear-gradient(135deg, rgba(120,18,18,0.5), rgba(80,8,8,0.4));
+    border: 1px solid rgba(255,200,50,0.15);
+    border-radius: 16px;
+    backdrop-filter: blur(5px);
+    position: relative;
+    overflow: hidden;
+    text-align: left;
+  }
+  .meaning-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 50%;
+    background: linear-gradient(180deg, rgba(255,200,100,0.03), transparent);
+    pointer-events: none; border-radius: 16px 16px 0 0;
+  }
+  .meaning-card-wide { max-width: 500px; }
+
+  .meaning-text {
+    font-family: 'Georgia', serif;
+    font-size: clamp(15px, 2vw, 19px);
+    color: #ffe0a0;
+    line-height: 1.7;
+  }
+  .meaning-number {
+    display: inline-block;
+    width: 48px; height: 48px;
+    line-height: 48px;
+    text-align: center;
+    background: linear-gradient(135deg, #ffd700, #e6a800);
+    color: #8b0000;
+    font-weight: bold;
+    font-size: 22px;
+    border-radius: 50%;
+    margin-right: 14px;
+    vertical-align: middle;
+    box-shadow: 0 2px 10px rgba(255,200,0,0.3);
+  }
+  .meaning-word {
+    display: inline-block;
+    font-weight: bold;
+    color: #ffd700;
+    margin-right: 10px;
+    font-size: 1.1em;
+    vertical-align: middle;
+  }
+
+  .meaning-separator {
+    font-size: 18px;
+    color: rgba(255,200,50,0.4);
+    margin: 20px 0;
+    letter-spacing: 10px;
+    font-family: 'Georgia', serif;
+  }
+
+  .meaning-final {
+    margin-top: 30px;
+  }
+  .meaning-final-divider {
+    width: 120px; height: 1px; margin: 20px auto;
+    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.3), transparent);
+  }
+  .meaning-summary-label {
+    font-family: 'Georgia', serif;
+    font-size: clamp(16px, 2vw, 20px);
+    color: rgba(255,220,150,0.8);
+    margin-bottom: 10px;
+  }
+  .meaning-summary-text {
+    font-family: 'Georgia', serif;
+    font-size: clamp(20px, 3vw, 30px);
+    color: #ffd700;
+    font-style: italic;
+    text-shadow: 0 0 25px rgba(255,200,0,0.4);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .meaning-summary-wish {
+    font-family: 'Georgia', serif;
+    font-size: clamp(16px, 2.2vw, 22px);
+    color: rgba(255,220,150,0.85);
+    line-height: 1.8;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+
+  /* Confetti canvas for lì xì */
+  #lixi-confetti {
+    position: fixed; top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    z-index: 200;
+  }
+</style>
+</head>
+<body>
+<div id="canvas-wrap">
+  <canvas id="canvas"></canvas>
+</div>
+<canvas id="fw-overlay"></canvas>
+<div id="wishes">
+  <h2>Lời Chúc Năm Mới</h2>
+  <p class="wishes-subtitle">TẾT BÍNH NGỌ 2026</p>
+  <div class="wishes-divider"></div>
+  <div class="wish-card">
+    <span class="wish-icon">🧧</span>
+    <p>
+    Xuân về gõ cửa tim anh<br>
+    Nắng hong nỗi nhớ, ngọt lành môi em<br><br>
+
+    Mai vàng trước ngõ êm đềm<br>
+    Đào hồng khẽ nở bên thềm yêu thương<br><br>
+
+    Năm mới gửi trọn vấn vương<br>
+    Chúc em hạnh phúc, yêu thương đủ đầy<br><br>
+
+    Tay trong tay đón gió mây<br>
+    Cùng nhau đi hết tháng ngày bình yên<br><br>
+
+    Dẫu cho năm tháng đổi miền<br>
+    Tình anh vẫn vẹn lời nguyền đầu xuân 💕
+    </p>
+  </div>
+  <div class="wish-card">
+    <span class="wish-icon">🌸</span>
+    <p>Năm mới đến rồi, anh muốn chúc em một năm thật mạnh mẽ và rực rỡ. Chặng đường du học Anh chắc chắn sẽ có thử thách, nhưng anh tin với sự thông minh và bản lĩnh của em, em sẽ làm được tất cả. Cảm ơn em vì đã dám theo đuổi ước mơ và không ngừng cố gắng cho tương lai của mình. Dù khoảng cách có xa đến đâu, anh vẫn luôn ở phía sau ủng hộ và tin tưởng em. Mong năm mới mang đến cho em thật nhiều cơ hội, thành công trong học tập và thật nhiều niềm vui nơi đất khách. Và hy vọng rằng, khi em nhìn lại hành trình ấy, sẽ luôn thấy có anh đồng hành trong từng bước trưởng thành của em. 💛</p>
+  </div>
+  <div class="wish-card">
+    <span class="wish-icon">🏮</span>
+    <p>Chúc em năm mới luôn dồi dào sức khỏe, tinh thần an nhiên và thật nhiều năng lượng tích cực. Mong em luôn giữ được sự cân bằng trong cuộc sống, biết yêu thương và chăm sóc bản thân mỗi ngày. Sức khỏe là điều quý giá nhất, vì vậy anh hy vọng em luôn mạnh mẽ, bình an và vui vẻ trong mọi hoàn cảnh. Chỉ cần em khỏe mạnh và hạnh phúc, đó đã là điều ý nghĩa nhất đối với anh.</p>
+  </div>
+  <div class="wish-card">
+    <span class="wish-icon">🎋</span>
+    <p>Chúc cho tình yêu của chúng ta sẽ ngày càng bền chặt và trưởng thành hơn theo thời gian. Dù phía trước còn nhiều thử thách hay thay đổi, anh hy vọng chúng ta luôn giữ được sự tin tưởng, thấu hiểu và trân trọng lẫn nhau. Mong rằng mỗi ngày trôi qua, tình cảm của hai đứa không chỉ là những cảm xúc nhất thời mà là sự đồng hành lâu dài, vững vàng và chân thành. Chúc cho chúng ta luôn đủ bao dung để lắng nghe, đủ kiên nhẫn để cùng nhau vượt qua khó khăn và đủ yêu thương để nắm tay nhau đi thật xa.</p>
+  </div>
+  <div class="wish-card">
+    <span class="wish-icon">💛</span>
+    <p>Chúc Mừng Năm Mới <br> An khang - Thịnh vượng - Phúc - Lộc - Thọ</p>
+  </div>
+  <div class="wishes-footer">
+    <span class="footer-ornament">✦ ✦ ✦</span>
+    Cùng đón nhận điều may mắn phía sau bao lì xì nhé em!<br>
+  </div>
+</div>
+<div id="lixi-section">
+  <div class="lixi-intro">
+    <p class="lixi-above-text">✦ ✦ ✦</p>
+    <h2 class="lixi-title">Nhận Lì Xì May Mắn</h2>
+    <p class="lixi-desc">Chạm vào bao lì xì để nhận phước lành đầu năm</p>
+    <div class="lixi-intro-divider"></div>
+  </div>
+
+  <div class="lixi-envelope" id="lixiEnvelope">
+    <div class="lixi-shine"></div>
+    <div class="lixi-flap">
+      <div class="lixi-flap-inner"></div>
+    </div>
+    <div class="lixi-body">
+      <div class="lixi-border-pattern"></div>
+      <div class="lixi-seal">福</div>
+      <div class="lixi-text-front">
+        <span class="lixi-front-top">CHÚC MỪNG</span>
+        <span class="lixi-front-bottom">NĂM MỚI</span>
+      </div>
+      <div class="lixi-corner lixi-corner-tl"></div>
+      <div class="lixi-corner lixi-corner-tr"></div>
+      <div class="lixi-corner lixi-corner-bl"></div>
+      <div class="lixi-corner lixi-corner-br"></div>
+    </div>
+    <div class="lixi-tap-hint">✦ Chạm để mở ✦</div>
+  </div>
+
+  <div class="lixi-content" id="lixiContent">
+    <div class="lixi-money-reveal">
+      <div class="lixi-congrats">🎊 Chúc Mừng Phát Tài! 🎊</div>
+      <div class="lixi-amount-wrap">
+        <div class="lixi-amount">678.999<span class="lixi-currency">đ</span></div>
+      </div>
+      <div class="lixi-divider-gold"></div>
+      <div class="lixi-meaning">
+        <p class="meaning-title">✦ Ý Nghĩa Con Số May Mắn ✦</p>
+        <div class="meaning-card">
+          <p class="meaning-text"><span class="meaning-number">6</span><span class="meaning-word">Lộc</span>Tài lộc dồi dào, thuận lợi hanh thông</p>
+        </div>
+        <div class="meaning-card">
+          <p class="meaning-text"><span class="meaning-number">7</span><span class="meaning-word">Tất</span>Tất cả đều viên mãn, trọn vẹn</p>
+        </div>
+        <div class="meaning-card">
+          <p class="meaning-text"><span class="meaning-number">8</span><span class="meaning-word">Phát</span>Phát đạt, thăng tiến, phát tài</p>
+        </div>
+        <div class="meaning-separator">◆ ◇ ◆</div>
+        <div class="meaning-card meaning-card-wide">
+          <p class="meaning-text"><span class="meaning-number">999</span><span class="meaning-word">Trường Cửu</span>Bền vững, trường tồn mãi mãi</p>
+        </div>
+        <div class="meaning-final">
+          <div class="meaning-final-divider"></div>
+          <p class="meaning-summary-label">Gộp lại, <strong>678.999</strong> mang ý nghĩa:</p>
+          <p class="meaning-summary-text">"Lộc — Tất — Phát, bền vững trường cửu"</p>
+          <p class="meaning-summary-wish">Chúc em năm mới Tài Lộc viên mãn,<br>mọi sự Phát Đạt và hạnh phúc bền lâu mãi mãi! 💛</p>
+          <div class="meaning-final-divider"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<canvas id="lixi-confetti"></canvas>
+<div id="scroll-hint">↓ Lời chúc gửi tới em ↓</div>
+<!-- <button id="download" onclick="downloadWallpaper()">⬇ Tải ảnh</button> -->
+
+<script>
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const W = 3840, H = 2160;
+canvas.width = W; canvas.height = H;
+
+function fitScreen() {
+  const scaleX = window.innerWidth / W;
+  const scaleY = window.innerHeight / H;
+  const scale = Math.max(scaleX, scaleY);
+  canvas.style.width = (W * scale) + 'px';
+  canvas.style.height = (H * scale) + 'px';
+  canvas.style.position = 'absolute';
+  canvas.style.left = ((window.innerWidth - W * scale) / 2) + 'px';
+  canvas.style.top = ((window.innerHeight - H * scale) / 2) + 'px';
+}
+fitScreen();
+window.addEventListener('resize', fitScreen);
+
+function rand(a, b) { return Math.random() * (b - a) + a; }
+function randInt(a, b) { return Math.floor(rand(a, b)); }
+
+// ============ STATIC BACKGROUND ============
+const bgCanvas = document.createElement('canvas');
+bgCanvas.width = W; bgCanvas.height = H;
+const bgCtx = bgCanvas.getContext('2d');
+
+function drawStaticScene() {
+  const c = bgCtx;
+  const bg = c.createRadialGradient(W*0.5,H*0.4,H*0.2,W*0.5,H*0.5,H*1.2);
+  bg.addColorStop(0,'#8b1a1a'); bg.addColorStop(0.3,'#6b0f0f'); bg.addColorStop(0.6,'#3d0808'); bg.addColorStop(1,'#1a0000');
+  c.fillStyle=bg; c.fillRect(0,0,W,H);
+  const glow1=c.createRadialGradient(W*0.3,H*0.15,0,W*0.3,H*0.15,H*0.5);
+  glow1.addColorStop(0,'rgba(255,200,50,0.12)'); glow1.addColorStop(0.5,'rgba(255,150,30,0.05)'); glow1.addColorStop(1,'rgba(255,100,0,0)');
+  c.fillStyle=glow1; c.fillRect(0,0,W,H);
+  const glow2=c.createRadialGradient(W*0.75,H*0.3,0,W*0.75,H*0.3,H*0.6);
+  glow2.addColorStop(0,'rgba(255,180,60,0.1)'); glow2.addColorStop(0.4,'rgba(200,80,20,0.04)'); glow2.addColorStop(1,'rgba(0,0,0,0)');
+  c.fillStyle=glow2; c.fillRect(0,0,W,H);
+  for(let i=0;i<5;i++){const fogY=H*(0.5+i*0.1);const fog=c.createLinearGradient(0,fogY-100,0,fogY+200);fog.addColorStop(0,'rgba(255,200,150,0)');fog.addColorStop(0.5,`rgba(255,200,150,${0.02-i*0.003})`);fog.addColorStop(1,'rgba(255,200,150,0)');c.fillStyle=fog;c.fillRect(0,fogY-100,W,300);}
+  for(let i=0;i<60;i++){const x=rand(0,W),y=rand(0,H),r=rand(20,80),a=rand(0.02,0.08);const cols=[`rgba(255,215,0,${a})`,`rgba(255,180,50,${a})`,`rgba(255,100,80,${a})`,`rgba(255,220,150,${a})`];const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cols[randInt(0,cols.length)]);g.addColorStop(0.7,`rgba(255,200,100,${a*0.3})`);g.addColorStop(1,'rgba(255,200,100,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+
+  function drawBranch(sx,sy,a,l,d,md,col){if(d>md||l<15)return;const ex=sx+Math.cos(a)*l,ey=sy+Math.sin(a)*l;c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo((sx+ex)/2+rand(-20,20),(sy+ey)/2+rand(-15,15),ex,ey);c.strokeStyle=col;c.lineWidth=Math.max(1.5,(md-d+1)*3.5);c.lineCap='round';c.stroke();const br=d<3?randInt(2,4):randInt(1,3);for(let i=0;i<br;i++)drawBranch(ex,ey,a+rand(-0.6,0.6),l*rand(0.55,0.75),d+1,md,col);}
+  let ends=[];
+  function collectEnds(sx,sy,a,l,d,md){if(d>md||l<15){ends.push({x:sx,y:sy});return;}const ex=sx+Math.cos(a)*l,ey=sy+Math.sin(a)*l;const br=d<3?randInt(2,4):randInt(1,3);for(let i=0;i<br;i++)collectEnds(ex,ey,a+rand(-0.6,0.6),l*rand(0.55,0.75),d+1,md);}
+  function drawBlossom(cx,cy,sz,tp){for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2-Math.PI/2;c.save();c.translate(cx,cy);c.rotate(a);const pg=c.createRadialGradient(0,-sz*0.5,0,0,-sz*0.4,sz*0.7);if(tp==='cherry'){pg.addColorStop(0,'rgba(255,220,230,0.95)');pg.addColorStop(0.5,'rgba(255,150,180,0.9)');pg.addColorStop(1,'rgba(220,80,120,0.6)');}else{pg.addColorStop(0,'rgba(255,245,120,0.95)');pg.addColorStop(0.5,'rgba(255,215,0,0.9)');pg.addColorStop(1,'rgba(218,165,32,0.7)');}c.fillStyle=pg;c.beginPath();c.ellipse(0,tp==='cherry'?-sz*0.5:-sz*0.45,tp==='cherry'?sz*0.35:sz*0.32,tp==='cherry'?sz*0.55:sz*0.5,0,0,Math.PI*2);c.fill();c.restore();}const cg=c.createRadialGradient(cx,cy,0,cx,cy,sz*0.2);if(tp==='cherry'){cg.addColorStop(0,'#fff5a0');cg.addColorStop(0.6,'#ffcc00');cg.addColorStop(1,'#cc8800');}else{cg.addColorStop(0,'#fff');cg.addColorStop(0.5,'#ffeeaa');cg.addColorStop(1,'#cc9900');}c.fillStyle=cg;c.beginPath();c.arc(cx,cy,sz*0.18,0,Math.PI*2);c.fill();for(let i=0;i<6;i++){const sa=rand(0,Math.PI*2),sr=rand(sz*0.12,sz*0.25);c.fillStyle=tp==='cherry'?'rgba(200,150,0,0.7)':'rgba(180,120,0,0.8)';c.beginPath();c.arc(cx+Math.cos(sa)*sr,cy+Math.sin(sa)*sr,2.5,0,Math.PI*2);c.fill();}const gc=tp==='cherry'?'rgba(255,180,200,':'rgba(255,230,80,';const gl=c.createRadialGradient(cx,cy,0,cx,cy,sz*1.5);gl.addColorStop(0,gc+'0.15)');gl.addColorStop(1,gc+'0)');c.fillStyle=gl;c.beginPath();c.arc(cx,cy,sz*1.5,0,Math.PI*2);c.fill();}
+
+  ends=[];collectEnds(W*0.08,H*0.55,-Math.PI/4,350,0,5);drawBranch(W*0.08,H*0.55,-Math.PI/4,350,0,5,'#4a2020');
+  for(const e of ends){if(Math.random()>0.3)drawBlossom(e.x+rand(-15,15),e.y+rand(-15,15),rand(18,35),'cherry');}
+  for(let i=0;i<30;i++){if(Math.random()>0.5)drawBlossom(rand(W*0.02,W*0.4),rand(H*0.05,H*0.65),rand(12,28),'cherry');}
+  ends=[];collectEnds(W*0.92,H*0.6,-Math.PI*3/4,320,0,5);drawBranch(W*0.92,H*0.6,-Math.PI*3/4,320,0,5,'#3d2b10');
+  for(const e of ends){if(Math.random()>0.25)drawBlossom(e.x+rand(-12,12),e.y+rand(-12,12),rand(16,32),'apricot');}
+  for(let i=0;i<25;i++){if(Math.random()>0.5)drawBlossom(rand(W*0.6,W*0.98),rand(H*0.08,H*0.6),rand(10,24),'apricot');}
+
+  function drawLantern(cx,cy,w,h){c.beginPath();c.moveTo(cx,cy-h*0.9);c.lineTo(cx,cy-h*0.5);c.strokeStyle='#8b6914';c.lineWidth=3;c.stroke();const og=c.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h)*2.5);og.addColorStop(0,'rgba(255,120,30,0.2)');og.addColorStop(0.3,'rgba(255,80,20,0.1)');og.addColorStop(1,'rgba(255,50,0,0)');c.fillStyle=og;c.beginPath();c.arc(cx,cy,Math.max(w,h)*2.5,0,Math.PI*2);c.fill();c.save();c.translate(cx,cy);const bd=c.createRadialGradient(0,0,w*0.1,0,0,w*0.6);bd.addColorStop(0,'#ff4444');bd.addColorStop(0.3,'#ee2222');bd.addColorStop(0.7,'#cc1111');bd.addColorStop(1,'#990000');c.fillStyle=bd;c.beginPath();c.ellipse(0,0,w*0.5,h*0.5,0,0,Math.PI*2);c.fill();const il=c.createRadialGradient(0,-h*0.05,0,0,0,w*0.35);il.addColorStop(0,'rgba(255,255,150,0.5)');il.addColorStop(0.5,'rgba(255,200,50,0.2)');il.addColorStop(1,'rgba(255,100,0,0)');c.fillStyle=il;c.beginPath();c.ellipse(0,-h*0.05,w*0.35,h*0.35,0,0,Math.PI*2);c.fill();c.strokeStyle='rgba(200,150,0,0.5)';c.lineWidth=2;for(let i=-2;i<=2;i++){const ry=i*h*0.12,rx=w*0.5*Math.cos(Math.asin(Math.abs(i)*0.24));c.beginPath();c.ellipse(0,ry,rx,3,0,0,Math.PI*2);c.stroke();}const cp=c.createLinearGradient(-w*0.25,0,w*0.25,0);cp.addColorStop(0,'#b8860b');cp.addColorStop(0.5,'#ffd700');cp.addColorStop(1,'#b8860b');c.fillStyle=cp;c.fillRect(-w*0.25,-h*0.52,w*0.5,h*0.08);c.fillRect(-w*0.2,h*0.46,w*0.4,h*0.06);c.strokeStyle='#ffd700';c.lineWidth=3;const ty=h*0.52;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(i*8,ty);c.quadraticCurveTo(i*10,ty+h*0.2,i*6,ty+h*0.35);c.stroke();}c.fillStyle='#ffd700';c.beginPath();c.arc(0,ty+h*0.38,8,0,Math.PI*2);c.fill();c.restore();}
+  drawLantern(W*0.25,H*0.2,90,130);drawLantern(W*0.45,H*0.12,110,150);drawLantern(W*0.65,H*0.15,100,140);drawLantern(W*0.8,H*0.22,85,120);drawLantern(W*0.15,H*0.35,55,80);drawLantern(W*0.55,H*0.28,60,85);drawLantern(W*0.88,H*0.38,50,70);
+
+  const vg=c.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*1.1);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(0.7,'rgba(0,0,0,0.15)');vg.addColorStop(1,'rgba(0,0,0,0.6)');c.fillStyle=vg;c.fillRect(0,0,W,H);
+}
+drawStaticScene();
+
+// ============ FALLING PETALS ============
+class FallingPetal {
+  constructor(){this.reset(true);}
+  reset(init){
+    this.x=rand(0,W);this.y=init?rand(-H*0.1,H):rand(-H*0.15,-20);
+    this.size=rand(6,45);this.speedY=rand(0.8,4.0);this.speedX=rand(-0.8,0.8);
+    this.rotation=rand(0,Math.PI*2);this.rotSpeed=rand(-0.02,0.02);
+    this.alpha=rand(0.3,0.8);this.wobbleAmp=rand(0.5,2);
+    this.wobbleSpeed=rand(0.01,0.03);this.wobblePhase=rand(0,Math.PI*2);
+    this.type=Math.random()>0.45?'cherry':'apricot';
+    this.depth=rand(0.4,1);this.size*=this.depth;this.alpha*=this.depth;
+  }
+  update(t){this.y+=this.speedY*this.depth;this.x+=this.speedX+Math.sin(t*this.wobbleSpeed+this.wobblePhase)*this.wobbleAmp;this.rotation+=this.rotSpeed;if(this.y>H+50)this.reset(false);if(this.x<-50)this.x=W+50;if(this.x>W+50)this.x=-50;}
+  draw(){
+    ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.rotation);ctx.globalAlpha=this.alpha;
+    if(this.type==='cherry'){const pg=ctx.createRadialGradient(0,0,0,0,0,this.size);pg.addColorStop(0,'rgba(255,210,220,1)');pg.addColorStop(0.6,'rgba(255,150,180,0.8)');pg.addColorStop(1,'rgba(220,100,140,0.3)');ctx.fillStyle=pg;}
+    else{const pg=ctx.createRadialGradient(0,0,0,0,0,this.size);pg.addColorStop(0,'rgba(255,245,140,1)');pg.addColorStop(0.6,'rgba(255,210,50,0.8)');pg.addColorStop(1,'rgba(200,160,30,0.3)');ctx.fillStyle=pg;}
+    ctx.beginPath();ctx.moveTo(0,-this.size*0.5);ctx.bezierCurveTo(this.size*0.5,-this.size*0.3,this.size*0.4,this.size*0.3,0,this.size*0.5);ctx.bezierCurveTo(-this.size*0.4,this.size*0.3,-this.size*0.5,-this.size*0.3,0,-this.size*0.5);ctx.fill();
+    ctx.globalAlpha=1;ctx.restore();
+  }
+}
+const petals=[];for(let i=0;i<200;i++)petals.push(new FallingPetal());
+
+// ============ LIGHT PARTICLES ============
+class LightParticle {
+  constructor(){this.reset(true);}
+  reset(){this.x=rand(0,W);this.y=rand(0,H);this.r=rand(1.5,5);this.alpha=rand(0.1,0.5);this.pulseSpeed=rand(0.01,0.04);this.pulsePhase=rand(0,Math.PI*2);this.driftX=rand(-0.2,0.2);this.driftY=rand(-0.3,-0.05);}
+  update(t){this.x+=this.driftX;this.y+=this.driftY;this.currentAlpha=this.alpha*(0.5+0.5*Math.sin(t*this.pulseSpeed+this.pulsePhase));if(this.y<-20||this.x<-20||this.x>W+20)this.reset();}
+  draw(){const pg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4);pg.addColorStop(0,`rgba(255,255,200,${this.currentAlpha})`);pg.addColorStop(0.5,`rgba(255,215,100,${this.currentAlpha*0.4})`);pg.addColorStop(1,'rgba(255,200,100,0)');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*4,0,Math.PI*2);ctx.fill();}
+}
+const lightParticles=[];for(let i=0;i<100;i++)lightParticles.push(new LightParticle());
+
+// ============ FIREFLIES ============
+class Firefly {
+  constructor(){this.reset();}
+  reset(){this.x=rand(0,W);this.y=rand(0,H);this.r=rand(2,6);this.alpha=0;this.maxAlpha=rand(0.4,0.9);this.phase=rand(0,Math.PI*2);this.speed=rand(0.015,0.04);this.vx=rand(-0.4,0.4);this.vy=rand(-0.4,0.4);this.life=rand(200,600);this.age=0;this.color=Math.random()>0.5?[255,230,100]:[255,200,150];}
+  update(t){this.age++;this.x+=this.vx+Math.sin(t*0.008+this.phase)*0.3;this.y+=this.vy+Math.cos(t*0.006+this.phase)*0.2;const lr=this.age/this.life;if(lr<0.15)this.alpha=this.maxAlpha*(lr/0.15);else if(lr>0.85)this.alpha=this.maxAlpha*(1-(lr-0.85)/0.15);else this.alpha=this.maxAlpha*(0.7+0.3*Math.sin(t*this.speed+this.phase));if(this.age>this.life||this.x<-50||this.x>W+50||this.y<-50||this.y>H+50)this.reset();}
+  draw(){const[r,g,b]=this.color;const og=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*8);og.addColorStop(0,`rgba(${r},${g},${b},${this.alpha*0.3})`);og.addColorStop(0.4,`rgba(${r},${g},${b},${this.alpha*0.1})`);og.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=og;ctx.beginPath();ctx.arc(this.x,this.y,this.r*8,0,Math.PI*2);ctx.fill();const cg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);cg.addColorStop(0,`rgba(255,255,240,${this.alpha})`);cg.addColorStop(1,`rgba(${r},${g},${b},${this.alpha*0.5})`);ctx.fillStyle=cg;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();}
+}
+const fireflies=[];for(let i=0;i<40;i++)fireflies.push(new Firefly());
+
+// ============ EMBERS ============
+class Ember {
+  constructor(){this.reset(true);}
+  reset(init){this.x=rand(0,W);this.y=init?rand(H*0.5,H*1.1):rand(H*0.95,H*1.1);this.r=rand(1,3.5);this.speedY=rand(-0.8,-2.5);this.speedX=rand(-0.3,0.3);this.alpha=rand(0.3,0.8);this.wobblePhase=rand(0,Math.PI*2);this.life=rand(300,700);this.age=0;this.color=[255,randInt(100,200),randInt(0,50)];}
+  update(t){this.age++;this.y+=this.speedY;this.x+=this.speedX+Math.sin(t*0.01+this.wobblePhase)*0.5;this.currentAlpha=this.alpha*(1-this.age/this.life);if(this.age>this.life||this.y<-30)this.reset(false);}
+  draw(){const[r,g,b]=this.color;const eg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3);eg.addColorStop(0,`rgba(255,255,200,${this.currentAlpha})`);eg.addColorStop(0.3,`rgba(${r},${g},${b},${this.currentAlpha*0.6})`);eg.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=eg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*3,0,Math.PI*2);ctx.fill();}
+}
+const embers=[];for(let i=0;i<50;i++)embers.push(new Ember());
+
+// ============ FOG WISPS ============
+class FogWisp {
+  constructor(){this.reset();}
+  reset(){this.x=rand(-200,W+200);this.y=rand(H*0.6,H);this.w=rand(400,900);this.h=rand(40,100);this.speed=rand(0.2,0.8);this.alpha=rand(0.02,0.06);this.phase=rand(0,Math.PI*2);}
+  update(t){this.x+=this.speed;this.currentAlpha=this.alpha*(0.6+0.4*Math.sin(t*0.005+this.phase));if(this.x>W+500)this.x=-this.w-200;}
+  draw(){const fg=ctx.createRadialGradient(this.x+this.w/2,this.y,10,this.x+this.w/2,this.y,this.w/2);fg.addColorStop(0,`rgba(255,200,150,${this.currentAlpha})`);fg.addColorStop(0.6,`rgba(255,180,120,${this.currentAlpha*0.5})`);fg.addColorStop(1,'rgba(255,150,100,0)');ctx.fillStyle=fg;ctx.beginPath();ctx.ellipse(this.x+this.w/2,this.y,this.w/2,this.h/2,0,0,Math.PI*2);ctx.fill();}
+}
+const fogWisps=[];for(let i=0;i<8;i++)fogWisps.push(new FogWisp());
+
+// ============ LANTERN GLOW PULSE ============
+const lanternPos=[{x:W*0.25,y:H*0.2,s:130},{x:W*0.45,y:H*0.12,s:150},{x:W*0.65,y:H*0.15,s:140},{x:W*0.8,y:H*0.22,s:120},{x:W*0.15,y:H*0.35,s:80},{x:W*0.55,y:H*0.28,s:85},{x:W*0.88,y:H*0.38,s:70}];
+function drawLanternGlows(t){for(const l of lanternPos){const p=0.08+0.06*Math.sin(t*0.03+l.x*0.001);const r=l.s*2.5;const lg=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,r);lg.addColorStop(0,`rgba(255,140,40,${p})`);lg.addColorStop(0.3,`rgba(255,100,20,${p*0.5})`);lg.addColorStop(1,'rgba(255,80,0,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.arc(l.x,l.y,r,0,Math.PI*2);ctx.fill();}}
+
+// ============ SPARKLES ============
+class Sparkle {
+  constructor(x,y){this.angle=rand(0,Math.PI*2);this.speed=rand(1,5);this.x=x;this.y=y;this.alpha=1;this.decay=rand(0.008,0.02);this.r=rand(1.5,4);this.color=Math.random()>0.5?[255,randInt(180,230),randInt(50,100)]:[255,randInt(200,255),randInt(150,220)];}
+  update(){this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed+0.3;this.speed*=0.97;this.alpha-=this.decay;}
+  draw(){if(this.alpha<=0)return;const[r,g,b]=this.color;ctx.globalAlpha=this.alpha;const sg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3);sg.addColorStop(0,'rgba(255,255,240,1)');sg.addColorStop(0.4,`rgba(${r},${g},${b},0.8)`);sg.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=sg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
+  isDead(){return this.alpha<=0;}
+}
+let sparkles=[];
+const burstPts=[{x:W*0.25,y:H*0.2},{x:W*0.45,y:H*0.12},{x:W*0.65,y:H*0.15},{x:W*0.8,y:H*0.22}];
+let lastBurst=0;
+function spawnBurst(x,y){for(let i=0;i<randInt(12,25);i++)sparkles.push(new Sparkle(x,y));}
+
+// ============ FIREWORKS (PHÁO HOA LỚN) ============
+class FireworkParticle {
+  constructor(x, y, color, type) {
+    // type: 'rocket', 'burst', 'willow', 'sparkle', 'ring'
+    this.x = x; this.y = y;
+    this.color = color;
+    this.type = type;
+    if (type === 'rocket') {
+      this.speedY = rand(-28, -16);
+      this.speedX = rand(-3, 3);
+      this.alpha = 1;
+      this.exploded = false;
+      this.r = 4;
+      this.trail = [];
+      this.trailLen = 15;
+      this.targetY = rand(H * 0.08, H * 0.45);
+    } else {
+      this.angle = rand(0, Math.PI * 2);
+      this.speed = type === 'willow' ? rand(4, 20) : type === 'ring' ? rand(12, 18) : rand(5, 22);
+      this.friction = type === 'willow' ? rand(0.97, 0.985) : rand(0.93, 0.97);
+      this.gravity = type === 'willow' ? rand(0.08, 0.2) : rand(0.03, 0.12);
+      this.alpha = 1;
+      this.decay = type === 'willow' ? rand(0.002, 0.006) : type === 'sparkle' ? rand(0.01, 0.025) : rand(0.004, 0.012);
+      this.r = type === 'willow' ? rand(2, 4) : rand(2.5, 6);
+      this.trail = [];
+      this.trailLen = type === 'willow' ? randInt(15, 30) : randInt(5, 14);
+      this.twinkle = type === 'sparkle';
+      this.twinklePhase = rand(0, Math.PI * 2);
+      this.twinkleSpeed = rand(0.2, 0.5);
+      // For ring type, constrain angle spread
+      if (type === 'ring') { this.speed = rand(14, 16); this.friction = 0.96; }
+    }
+  }
+  update(t) {
+    if (this.type === 'rocket') {
+      this.trail.push({ x: this.x, y: this.y });
+      if (this.trail.length > this.trailLen) this.trail.shift();
+      this.x += this.speedX;
+      this.y += this.speedY;
+      this.speedY += 0.25;
+      if (this.y <= this.targetY || this.speedY >= -1) this.exploded = true;
+    } else {
+      this.trail.push({ x: this.x, y: this.y, a: this.alpha });
+      if (this.trail.length > this.trailLen) this.trail.shift();
+      this.speed *= this.friction;
+      this.x += Math.cos(this.angle) * this.speed;
+      this.y += Math.sin(this.angle) * this.speed + this.gravity;
+      this.alpha -= this.decay;
+      if (this.twinkle) {
+        this.twinklePhase += this.twinkleSpeed;
+      }
+    }
+  }
+  draw(t) {
+    if (this.type === 'rocket') {
+      // Rocket trail
+      for (let i = 0; i < this.trail.length; i++) {
+        const tr = this.trail[i];
+        const ta = (i / this.trail.length) * 0.6;
+        const trR = 3 * (i / this.trail.length);
+        ctx.fillStyle = `rgba(255, 200, 100, ${ta})`;
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, trR, 0, Math.PI * 2); ctx.fill();
+      }
+      // Rocket head glow
+      const rg = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 18);
+      rg.addColorStop(0, 'rgba(255,255,230,1)');
+      rg.addColorStop(0.3, 'rgba(255,220,100,0.8)');
+      rg.addColorStop(1, 'rgba(255,150,50,0)');
+      ctx.fillStyle = rg;
+      ctx.beginPath(); ctx.arc(this.x, this.y, 18, 0, Math.PI * 2); ctx.fill();
+      // Sparks from rocket
+      for (let i = 0; i < 3; i++) {
+        const sx = this.x + rand(-8, 8), sy = this.y + rand(5, 20);
+        ctx.fillStyle = `rgba(255,${randInt(180,255)},${randInt(50,150)},${rand(0.3,0.7)})`;
+        ctx.beginPath(); ctx.arc(sx, sy, rand(1, 3), 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      const [r, g, b] = this.color;
+      let drawAlpha = this.alpha;
+      if (this.twinkle) {
+        drawAlpha *= (0.3 + 0.7 * Math.abs(Math.sin(this.twinklePhase)));
+      }
+      // Trail with gradient
+      for (let i = 0; i < this.trail.length; i++) {
+        const tr = this.trail[i];
+        const ta = (tr.a || drawAlpha) * (i / this.trail.length) * 0.4;
+        const trR = this.r * 0.6 * (i / this.trail.length);
+        ctx.fillStyle = `rgba(${r},${g},${b},${ta})`;
+        ctx.beginPath(); ctx.arc(tr.x, tr.y, trR, 0, Math.PI * 2); ctx.fill();
+      }
+      // Main particle with big glow
+      const glowR = this.r * (this.type === 'willow' ? 5 : 6);
+      const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowR);
+      glow.addColorStop(0, `rgba(255,255,255,${drawAlpha * 0.9})`);
+      glow.addColorStop(0.15, `rgba(${r},${g},${b},${drawAlpha * 0.8})`);
+      glow.addColorStop(0.5, `rgba(${r},${g},${b},${drawAlpha * 0.3})`);
+      glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(this.x, this.y, glowR, 0, Math.PI * 2); ctx.fill();
+    }
+  }
+  isDead() { return this.type !== 'rocket' ? this.alpha <= 0 : false; }
+}
+
+let fireworks = [];
+let fwRockets = [];
+let flashAlpha = 0; // screen flash on explosion
+const fwColors = [
+  [255, 50, 50], [255, 200, 50], [255, 130, 200], [80, 180, 255],
+  [255, 255, 80], [200, 80, 255], [255, 160, 60], [80, 255, 130],
+  [255, 100, 160], [255, 220, 80], [50, 255, 220], [255, 80, 120],
+  [180, 255, 80], [255, 180, 255],
+];
+
+function launchFirework() {
+  const x = rand(W * 0.08, W * 0.92);
+  fwRockets.push(new FireworkParticle(x, H + 20, [255, 200, 100], 'rocket'));
+}
+
+function explodeFirework(x, y) {
+  // Screen flash
+  flashAlpha = 0.25;
+  // Choose explosion type
+  const types = ['burst', 'burst', 'willow', 'ring', 'sparkle', 'burst'];
+  const type = types[randInt(0, types.length)];
+  const color = fwColors[randInt(0, fwColors.length)];
+
+  if (type === 'burst') {
+    // Big spherical burst
+    const count = randInt(120, 200);
+    for (let i = 0; i < count; i++) {
+      fireworks.push(new FireworkParticle(x, y, color, 'burst'));
+    }
+    // Inner ring different color
+    if (Math.random() > 0.3) {
+      const c2 = fwColors[randInt(0, fwColors.length)];
+      for (let i = 0; i < 50; i++) {
+        const p = new FireworkParticle(x, y, c2, 'burst');
+        p.speed *= 0.4;
+        p.decay *= 0.7;
+        fireworks.push(p);
+      }
+    }
+  } else if (type === 'willow') {
+    // Willow (liễu rủ) - long trailing
+    const count = randInt(80, 150);
+    for (let i = 0; i < count; i++) {
+      fireworks.push(new FireworkParticle(x, y, color, 'willow'));
+    }
+  } else if (type === 'ring') {
+    // Ring explosion - particles in a circle
+    const count = randInt(60, 100);
+    const angleStep = (Math.PI * 2) / count;
+    for (let i = 0; i < count; i++) {
+      const p = new FireworkParticle(x, y, color, 'ring');
+      p.angle = angleStep * i + rand(-0.05, 0.05);
+      fireworks.push(p);
+    }
+    // Fill center with sparkles
+    const c2 = fwColors[randInt(0, fwColors.length)];
+    for (let i = 0; i < 40; i++) {
+      const p = new FireworkParticle(x, y, c2, 'sparkle');
+      p.speed *= 0.3;
+      fireworks.push(p);
+    }
+  } else if (type === 'sparkle') {
+    // Twinkling sparkle explosion
+    const count = randInt(100, 180);
+    for (let i = 0; i < count; i++) {
+      fireworks.push(new FireworkParticle(x, y, color, 'sparkle'));
+    }
+  }
+
+  // Chance of double explosion nearby
+  if (Math.random() > 0.6) {
+    setTimeout(() => {
+      const c3 = fwColors[randInt(0, fwColors.length)];
+      const ox = x + rand(-200, 200), oy = y + rand(-150, 150);
+      const count = randInt(80, 140);
+      for (let i = 0; i < count; i++) {
+        fireworks.push(new FireworkParticle(ox, oy, c3, 'burst'));
+      }
+      flashAlpha = 0.15;
+    }, randInt(100, 300));
+  }
+}
+
+// ============ COUNTDOWN ============
+// Tết Bính Ngọ 2026 (âm lịch): 17/02/2026
+const TET_DATE = new Date('2026-02-17T00:00:00+07:00');
+// const TET_DATE = new Date('2026-02-16T10:44:00+07:00');
+const TET_LABEL = 'BÍNH NGỌ 2026';
+
+let gameState = 'countdown'; // 'countdown' | 'final10' | 'celebrate'
+let lastSecond = -1;
+let numberScale = 1;
+let numberTargetScale = 1;
+let celebrateStartFrame = 0;
+let fwLaunchTimer = 0;
+
+function getCountdown() {
+  const now = new Date();
+  const diff = TET_DATE - now;
+  if (diff <= 0) return { days:0, hours:0, minutes:0, seconds:0, total:0, done:true };
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff / 3600000) % 24);
+  const minutes = Math.floor((diff / 60000) % 60);
+  const seconds = Math.floor((diff / 1000) % 60);
+  return { days, hours, minutes, seconds, total: diff / 1000, done: false };
+}
+
+function drawNormalCountdown(t) {
+  const cd = getCountdown();
+  const cx = W / 2, cy = H / 2;
+
+  // === Outer ambient glow ===
+  const ambientGlow = ctx.createRadialGradient(cx, cy, 100, cx, cy, 900);
+  ambientGlow.addColorStop(0, 'rgba(255,150,30,0.06)');
+  ambientGlow.addColorStop(0.5, 'rgba(255,80,20,0.03)');
+  ambientGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = ambientGlow;
+  ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+
+  // === Title section with decorative elements ===
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  // Subtitle above title
+  ctx.font = 'bold 36px Georgia, serif';
+  ctx.fillStyle = 'rgba(255,200,100,0.5)';
+  ctx.letterSpacing = '8px';
+  ctx.fillText('— — —  ĐẾM NGƯỢC ĐÓN  — — —', cx, cy - 220);
+
+  // Main title
+  ctx.font = 'bold 72px Georgia, serif';
+  const titleGlow = 20 + 8 * Math.sin(t * 0.04);
+  ctx.shadowColor = 'rgba(255,180,0,0.7)';
+  ctx.shadowBlur = titleGlow;
+  const titleGrad = ctx.createLinearGradient(cx - 400, 0, cx + 400, 0);
+  titleGrad.addColorStop(0, '#f5c842');
+  titleGrad.addColorStop(0.3, '#ffe88a');
+  titleGrad.addColorStop(0.5, '#fff5c8');
+  titleGrad.addColorStop(0.7, '#ffe88a');
+  titleGrad.addColorStop(1, '#f5c842');
+  ctx.fillStyle = titleGrad;
+  ctx.fillText(`TẾT ${TET_LABEL}`, cx, cy - 155);
+  ctx.shadowBlur = 0;
+
+  // Decorative line under title
+  const lineAlpha = 0.4 + 0.2 * Math.sin(t * 0.05);
+  ctx.strokeStyle = `rgba(255,200,50,${lineAlpha})`;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx - 350, cy - 108); ctx.lineTo(cx - 60, cy - 108); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 60, cy - 108); ctx.lineTo(cx + 350, cy - 108); ctx.stroke();
+  // Center diamond
+  ctx.fillStyle = `rgba(255,200,50,${lineAlpha + 0.1})`;
+  ctx.save(); ctx.translate(cx, cy - 108); ctx.rotate(Math.PI / 4);
+  ctx.fillRect(-6, -6, 12, 12); ctx.restore();
+  // Side dots
+  ctx.fillStyle = `rgba(255,200,50,${lineAlpha})`;
+  ctx.beginPath(); ctx.arc(cx - 355, cy - 108, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + 355, cy - 108, 3, 0, Math.PI * 2); ctx.fill();
+
+  // === Number boxes ===
+  const boxData = [{v: cd.days, l: 'NGÀY'}, {v: cd.hours, l: 'GIỜ'}, {v: cd.minutes, l: 'PHÚT'}, {v: cd.seconds, l: 'GIÂY'}];
+  const bW = 240, bH = 260, gap = 55;
+  const totalBW = boxData.length * bW + (boxData.length - 1) * gap;
+  const sx = cx - totalBW / 2, bY = cy - 65;
+
+  boxData.forEach((item, i) => {
+    const bx = sx + i * (bW + gap), bcx = bx + bW / 2, bcy = bY + bH / 2;
+    const br = 22;
+
+    // Box shadow (outer glow)
+    const boxGlow = ctx.createRadialGradient(bcx, bcy, 0, bcx, bcy, bW * 0.85);
+    boxGlow.addColorStop(0, 'rgba(255,150,30,0.06)');
+    boxGlow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = boxGlow;
+    ctx.beginPath(); ctx.arc(bcx, bcy, bW * 0.85, 0, Math.PI * 2); ctx.fill();
+
+    // Box background - glass effect
+    const bg = ctx.createLinearGradient(bx, bY, bx, bY + bH);
+    bg.addColorStop(0, 'rgba(140,15,15,0.65)');
+    bg.addColorStop(0.4, 'rgba(100,8,8,0.75)');
+    bg.addColorStop(0.6, 'rgba(80,5,5,0.8)');
+    bg.addColorStop(1, 'rgba(60,3,3,0.7)');
+    ctx.fillStyle = bg;
+    // Rounded rect path
+    ctx.beginPath();
+    ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
+    ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
+    ctx.lineTo(bx + bW, bY + bH - br);
+    ctx.quadraticCurveTo(bx + bW, bY + bH, bx + bW - br, bY + bH);
+    ctx.lineTo(bx + br, bY + bH);
+    ctx.quadraticCurveTo(bx, bY + bH, bx, bY + bH - br);
+    ctx.lineTo(bx, bY + br);
+    ctx.quadraticCurveTo(bx, bY, bx + br, bY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Border - gold gradient
+    const borderGrad = ctx.createLinearGradient(bx, bY, bx + bW, bY + bH);
+    borderGrad.addColorStop(0, 'rgba(255,220,80,0.5)');
+    borderGrad.addColorStop(0.5, 'rgba(255,180,50,0.2)');
+    borderGrad.addColorStop(1, 'rgba(255,220,80,0.5)');
+    ctx.strokeStyle = borderGrad; ctx.lineWidth = 2; ctx.stroke();
+
+    // Top highlight reflection
+    const hl = ctx.createLinearGradient(bx, bY, bx, bY + bH * 0.35);
+    hl.addColorStop(0, 'rgba(255,255,220,0.1)');
+    hl.addColorStop(1, 'rgba(255,255,220,0)');
+    ctx.fillStyle = hl;
+    ctx.beginPath();
+    ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
+    ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
+    ctx.lineTo(bx + bW, bY + bH * 0.35);
+    ctx.lineTo(bx, bY + bH * 0.35);
+    ctx.lineTo(bx, bY + br);
+    ctx.quadraticCurveTo(bx, bY, bx + br, bY);
+    ctx.closePath(); ctx.fill();
+
+    // Inner top gold line accent
+    const topLine = ctx.createLinearGradient(bx + bW * 0.2, 0, bx + bW * 0.8, 0);
+    topLine.addColorStop(0, 'rgba(255,200,50,0)');
+    topLine.addColorStop(0.5, 'rgba(255,200,50,0.5)');
+    topLine.addColorStop(1, 'rgba(255,200,50,0)');
+    ctx.strokeStyle = topLine; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bx + bW * 0.15, bY + 1); ctx.lineTo(bx + bW * 0.85, bY + 1); ctx.stroke();
+
+    // Seconds box special pulsing border
+    if (i === 3) {
+      const secPulse = 0.3 + 0.3 * Math.sin(t * 0.1);
+      ctx.strokeStyle = `rgba(255,200,50,${secPulse})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
+      ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
+      ctx.lineTo(bx + bW, bY + bH - br);
+      ctx.quadraticCurveTo(bx + bW, bY + bH, bx + bW - br, bY + bH);
+      ctx.lineTo(bx + br, bY + bH);
+      ctx.quadraticCurveTo(bx, bY + bH, bx, bY + bH - br);
+      ctx.lineTo(bx, bY + br);
+      ctx.quadraticCurveTo(bx, bY, bx + br, bY);
+      ctx.closePath(); ctx.stroke();
+    }
+
+    // Number with scale animation for seconds
+    const pulse = i === 3 ? 1 + 0.04 * Math.sin(t * 0.12) : 1;
+    ctx.save(); ctx.translate(bcx, bcy - 18); ctx.scale(pulse, pulse);
+    ctx.font = 'bold 130px Georgia, serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+    // Number gradient fill
+    const numGrad = ctx.createLinearGradient(0, -60, 0, 60);
+    numGrad.addColorStop(0, '#fff5d0');
+    numGrad.addColorStop(0.4, '#ffd700');
+    numGrad.addColorStop(1, '#d4a017');
+    ctx.fillStyle = numGrad;
+    ctx.shadowColor = 'rgba(255,200,0,0.7)';
+    ctx.shadowBlur = 20;
+    ctx.fillText(String(item.v).padStart(2, '0'), 0, 0);
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    // Label with elegant styling
+    ctx.font = 'bold 30px Georgia, serif';
+    ctx.textAlign = 'center';
+    const labelGrad = ctx.createLinearGradient(bcx - 50, 0, bcx + 50, 0);
+    labelGrad.addColorStop(0, 'rgba(255,200,120,0.5)');
+    labelGrad.addColorStop(0.5, 'rgba(255,220,170,0.9)');
+    labelGrad.addColorStop(1, 'rgba(255,200,120,0.5)');
+    ctx.fillStyle = labelGrad;
+    ctx.fillText(item.l, bcx, bY + bH - 32);
+
+    // Small label underline
+    ctx.strokeStyle = 'rgba(255,200,50,0.2)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(bcx - 35, bY + bH - 18); ctx.lineTo(bcx + 35, bY + bH - 18); ctx.stroke();
+
+    // Colon separator with glow
+    if (i < boxData.length - 1) {
+      const colX = bx + bW + gap / 2;
+      const ca = 0.5 + 0.5 * Math.sin(t * 0.08);
+      ctx.font = 'bold 80px Georgia, serif';
+      ctx.fillStyle = `rgba(255,200,80,${ca})`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.shadowColor = `rgba(255,180,50,${ca * 0.5})`;
+      ctx.shadowBlur = 10;
+      // Two dots instead of colon for elegance
+      ctx.beginPath(); ctx.arc(colX, bcy - 35, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(colX, bcy + 25, 8, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  });
+
+  // === Bottom decorative text ===
+  ctx.font = '32px Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = 'rgba(255,200,100,0.35)';
+  ctx.fillText('Năm Bính Ngọ • 2026', cx, bY + bH + 55);
+
+  ctx.restore();
+}
+
+// ============ FINAL 10 SECONDS ============
+let final10Particles = [];
+
+class CountdownParticle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.angle = rand(0, Math.PI * 2);
+    this.speed = rand(3, 12);
+    this.alpha = 1;
+    this.decay = rand(0.015, 0.035);
+    this.r = rand(2, 6);
+    this.color = [255, randInt(150, 255), randInt(0, 100)];
+    this.gravity = rand(0.05, 0.15);
+  }
+  update() {
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed + this.gravity;
+    this.speed *= 0.96;
+    this.alpha -= this.decay;
+  }
+  draw() {
+    if (this.alpha <= 0) return;
+    const [r, g, b] = this.color;
+    const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 3);
+    glow.addColorStop(0, `rgba(255,255,240,${this.alpha})`);
+    glow.addColorStop(0.4, `rgba(${r},${g},${b},${this.alpha * 0.6})`);
+    glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.fillStyle = glow;
+    ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 3, 0, Math.PI * 2); ctx.fill();
+  }
+  isDead() { return this.alpha <= 0; }
+}
+
+function drawFinal10(t, secondsLeft) {
+  const cx = W / 2, cy = H / 2;
+  const curSec = Math.ceil(secondsLeft);
+
+  // Lerp scale
+  numberScale += (numberTargetScale - numberScale) * 0.15;
+
+  // Dark cinematic overlay with breathing
+  const darkPulse = 0.45 + 0.08 * Math.sin(t * 0.06);
+  ctx.fillStyle = `rgba(0, 0, 0, ${darkPulse})`;
+  ctx.fillRect(0, 0, W, H);
+
+  // Radial light behind everything
+  const bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 550);
+  bgGlow.addColorStop(0, 'rgba(255,120,20,0.12)');
+  bgGlow.addColorStop(0.4, 'rgba(255,80,10,0.05)');
+  bgGlow.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = bgGlow;
+  ctx.beginPath(); ctx.arc(cx, cy, 550, 0, Math.PI * 2); ctx.fill();
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // === Outer decorative ring ===
+  const outerR = 420;
+  const outerAlpha = 0.15 + 0.08 * Math.sin(t * 0.04);
+  ctx.strokeStyle = `rgba(255,180,50,${outerAlpha})`;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([15, 20]);
+  ctx.beginPath(); ctx.arc(0, 0, outerR, 0, Math.PI * 2); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // === Main progress ring ===
+  const ringR = 360;
+  // Background ring
+  ctx.strokeStyle = 'rgba(255,200,50,0.12)';
+  ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
+
+  // Progress arc with gradient
+  const progress = (10 - secondsLeft) / 10;
+  const endAngle = -Math.PI / 2 + progress * Math.PI * 2;
+
+  // Glowing progress track
+  ctx.lineWidth = 10;
+  ctx.strokeStyle = '#ffd700';
+  ctx.shadowColor = 'rgba(255,200,0,0.8)';
+  ctx.shadowBlur = 25;
+  ctx.beginPath(); ctx.arc(0, 0, ringR, -Math.PI / 2, endAngle); ctx.stroke();
+  ctx.shadowBlur = 0;
+
+  // Progress head dot
+  const headX = Math.cos(endAngle) * ringR;
+  const headY = Math.sin(endAngle) * ringR;
+  const headGlow = ctx.createRadialGradient(headX, headY, 0, headX, headY, 25);
+  headGlow.addColorStop(0, 'rgba(255,255,220,0.9)');
+  headGlow.addColorStop(0.4, 'rgba(255,200,50,0.5)');
+  headGlow.addColorStop(1, 'rgba(255,200,50,0)');
+  ctx.fillStyle = headGlow;
+  ctx.beginPath(); ctx.arc(headX, headY, 25, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = '#fff8e0';
+  ctx.beginPath(); ctx.arc(headX, headY, 6, 0, Math.PI * 2); ctx.fill();
+
+  // === Inner thin ring ===
+  const innerR = 300;
+  ctx.strokeStyle = 'rgba(255,200,50,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(0, 0, innerR, 0, Math.PI * 2); ctx.stroke();
+
+  // === Tick marks on ring ===
+  for (let i = 0; i < 10; i++) {
+    const a = -Math.PI / 2 + (i / 10) * Math.PI * 2;
+    const innerTick = ringR - 20;
+    const outerTick = ringR + 20;
+    const isPassed = i / 10 < progress;
+    ctx.strokeStyle = isPassed ? 'rgba(255,200,50,0.6)' : 'rgba(255,200,50,0.15)';
+    ctx.lineWidth = isPassed ? 3 : 1.5;
+    ctx.beginPath();
+    ctx.moveTo(Math.cos(a) * innerTick, Math.sin(a) * innerTick);
+    ctx.lineTo(Math.cos(a) * outerTick, Math.sin(a) * outerTick);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // === Spawn particles on number change ===
+  final10Particles = final10Particles.filter(p => !p.isDead());
+  for (const p of final10Particles) { p.update(); p.draw(); }
+
+  // === The big number ===
+  ctx.save();
+  ctx.translate(cx, cy);
+  ctx.scale(numberScale, numberScale);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.font = 'bold 420px Georgia, serif';
+
+  // Number with gradient
+  const numGrad = ctx.createLinearGradient(0, -200, 0, 200);
+  numGrad.addColorStop(0, '#fff8e0');
+  numGrad.addColorStop(0.3, '#ffd700');
+  numGrad.addColorStop(0.7, '#e6b800');
+  numGrad.addColorStop(1, '#cc9900');
+  ctx.fillStyle = numGrad;
+  ctx.shadowColor = 'rgba(255,200,0,0.9)';
+  ctx.shadowBlur = 80;
+  ctx.fillText(String(curSec), 0, 15);
+
+  // Second layer for text outline
+  ctx.shadowBlur = 0;
+  ctx.strokeStyle = 'rgba(255,255,200,0.15)';
+  ctx.lineWidth = 2;
+  ctx.strokeText(String(curSec), 0, 15);
+  ctx.restore();
+
+  // === Labels ===
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  // Top label
+  ctx.font = 'bold 42px Georgia, serif';
+  ctx.fillStyle = 'rgba(255,220,150,0.5)';
+  ctx.fillText('— SẮP ĐẾN RỒI —', cx, cy - 300);
+
+  // Bottom label
+  ctx.font = 'bold 52px Georgia, serif';
+  const labelGrad = ctx.createLinearGradient(cx - 300, 0, cx + 300, 0);
+  labelGrad.addColorStop(0, 'rgba(255,200,100,0.3)');
+  labelGrad.addColorStop(0.5, 'rgba(255,220,150,0.8)');
+  labelGrad.addColorStop(1, 'rgba(255,200,100,0.3)');
+  ctx.fillStyle = labelGrad;
+  ctx.fillText('CHÀO ĐÓN TẾT ' + TET_LABEL, cx, cy + 300);
+
+  // Small decorative line under label
+  ctx.strokeStyle = 'rgba(255,200,50,0.3)';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx - 200, cy + 330); ctx.lineTo(cx + 200, cy + 330); ctx.stroke();
+}
+
+// ============ CELEBRATE SCREEN ============
+function drawCelebrate(t) {
+  const cx = W / 2, cy = H * 0.42;
+  const elapsed = t - celebrateStartFrame;
+  const fadeIn = Math.min(1, elapsed / 60);
+
+  // Launch fireworks - MASSIVE amount, rapid fire
+  fwLaunchTimer++;
+  // Barrage at start
+  if (elapsed < 120) {
+    if (fwLaunchTimer % 4 === 0) launchFirework();
+    if (fwLaunchTimer % 6 === 0) launchFirework();
+  } else {
+    // Continuous steady stream
+    if (fwLaunchTimer % 8 === 0) launchFirework();
+    if (fwLaunchTimer % 12 === 0) launchFirework();
+    if (fwLaunchTimer % 18 === 0 && Math.random() > 0.3) launchFirework();
+    // Occasional burst of 3 at once
+    if (fwLaunchTimer % 90 === 0) { launchFirework(); launchFirework(); launchFirework(); }
+  }
+
+  // Update & draw rockets
+  for (let i = fwRockets.length - 1; i >= 0; i--) {
+    fwRockets[i].update(t);
+    fwRockets[i].draw(t);
+    if (fwRockets[i].exploded) {
+      explodeFirework(fwRockets[i].x, fwRockets[i].y);
+      fwRockets.splice(i, 1);
+    }
+  }
+
+  // Update & draw firework particles
+  fireworks = fireworks.filter(p => !p.isDead());
+  for (const p of fireworks) { p.update(t); p.draw(t); }
+
+  // Flash effect on explosion
+  if (flashAlpha > 0) {
+    ctx.fillStyle = `rgba(255, 240, 200, ${flashAlpha})`;
+    ctx.fillRect(0, 0, W, H);
+    flashAlpha *= 0.88;
+    if (flashAlpha < 0.005) flashAlpha = 0;
+  }
+
+  // Warm overlay for text readability
+  const textBg = ctx.createRadialGradient(cx, cy, 80, cx, cy, 800);
+  textBg.addColorStop(0, `rgba(40,5,5,${0.5 * fadeIn})`);
+  textBg.addColorStop(0.6, `rgba(30,3,3,${0.25 * fadeIn})`);
+  textBg.addColorStop(1, 'rgba(30,3,3,0)');
+  ctx.fillStyle = textBg;
+  ctx.beginPath(); ctx.arc(cx, cy, 800, 0, Math.PI * 2); ctx.fill();
+
+  // Title glow layers
+  const tg1 = ctx.createRadialGradient(cx, cy - 40, 0, cx, cy - 40, 500);
+  tg1.addColorStop(0, `rgba(255,200,50,${0.18 * fadeIn})`);
+  tg1.addColorStop(0.5, `rgba(255,150,30,${0.06 * fadeIn})`);
+  tg1.addColorStop(1, 'rgba(255,100,0,0)');
+  ctx.fillStyle = tg1;
+  ctx.beginPath(); ctx.arc(cx, cy - 40, 500, 0, Math.PI * 2); ctx.fill();
+
+  ctx.save();
+  ctx.globalAlpha = fadeIn;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+
+  // === Top decorative ornament ===
+  const ornAlpha = 0.4 + 0.15 * Math.sin(t * 0.04);
+  ctx.fillStyle = `rgba(255,200,50,${ornAlpha})`;
+  ctx.font = '40px Georgia, serif';
+  ctx.fillText('✦   ✦   ✦', cx, cy - 260);
+
+  // === Decorative lines above title ===
+  ctx.strokeStyle = `rgba(255,200,50,${ornAlpha * 0.6})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(cx - 450, cy - 230); ctx.lineTo(cx - 100, cy - 230); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx + 100, cy - 230); ctx.lineTo(cx + 450, cy - 230); ctx.stroke();
+
+  // === Main title with dramatic styling ===
+  const bounce = elapsed < 90 ? 1 + 0.12 * Math.sin(elapsed * 0.12) * Math.max(0, 1 - elapsed / 90) : 1;
+  const glowPulse = 40 + 20 * Math.sin(t * 0.05);
+
+  ctx.save();
+  ctx.translate(cx, cy - 80);
+  ctx.scale(bounce, bounce);
+
+  // Title gradient
+  const titleGrad = ctx.createLinearGradient(-500, -120, 500, 120);
+  titleGrad.addColorStop(0, '#e6a800');
+  titleGrad.addColorStop(0.2, '#ffd700');
+  titleGrad.addColorStop(0.4, '#fff5c8');
+  titleGrad.addColorStop(0.6, '#ffe88a');
+  titleGrad.addColorStop(0.8, '#ffd700');
+  titleGrad.addColorStop(1, '#e6a800');
+
+  ctx.font = 'bold 170px Georgia, serif';
+  ctx.fillStyle = titleGrad;
+  ctx.shadowColor = 'rgba(255,200,0,0.9)';
+  ctx.shadowBlur = glowPulse;
+
+  // Subtle outline
+  ctx.strokeStyle = 'rgba(255,250,200,0.2)';
+  ctx.lineWidth = 2;
+  ctx.strokeText('CHÚC MỪNG', 0, -95);
+  ctx.strokeText('NĂM MỚI', 0, 95);
+  ctx.fillText('CHÚC MỪNG', 0, -95);
+  ctx.fillText('NĂM MỚI', 0, 95);
+  ctx.shadowBlur = 0;
+  ctx.restore();
+
+  // === Decorative separator ===
+  const lineAlpha = 0.5 + 0.2 * Math.sin(t * 0.04);
+  // Left ornamental line
+  const lineGradL = ctx.createLinearGradient(cx - 500, 0, cx - 80, 0);
+  lineGradL.addColorStop(0, 'rgba(255,200,50,0)');
+  lineGradL.addColorStop(0.3, `rgba(255,200,50,${lineAlpha * 0.3})`);
+  lineGradL.addColorStop(1, `rgba(255,200,50,${lineAlpha})`);
+  ctx.strokeStyle = lineGradL; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx - 500, cy + 55); ctx.lineTo(cx - 80, cy + 55); ctx.stroke();
+
+  // Right ornamental line
+  const lineGradR = ctx.createLinearGradient(cx + 80, 0, cx + 500, 0);
+  lineGradR.addColorStop(0, `rgba(255,200,50,${lineAlpha})`);
+  lineGradR.addColorStop(0.7, `rgba(255,200,50,${lineAlpha * 0.3})`);
+  lineGradR.addColorStop(1, 'rgba(255,200,50,0)');
+  ctx.strokeStyle = lineGradR; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(cx + 80, cy + 55); ctx.lineTo(cx + 500, cy + 55); ctx.stroke();
+
+  // Center diamond
+  ctx.fillStyle = `rgba(255,200,50,${lineAlpha + 0.1})`;
+  ctx.save(); ctx.translate(cx, cy + 55); ctx.rotate(Math.PI / 4);
+  ctx.fillRect(-9, -9, 18, 18); ctx.restore();
+
+  // Side dots
+  ctx.fillStyle = `rgba(255,200,50,${lineAlpha * 0.6})`;
+  ctx.beginPath(); ctx.arc(cx - 60, cy + 55, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(cx + 60, cy + 55, 3, 0, Math.PI * 2); ctx.fill();
+
+  // === Subtitle ===
+  ctx.font = 'bold 76px Georgia, serif';
+  const subGrad = ctx.createLinearGradient(cx - 400, 0, cx + 400, 0);
+  subGrad.addColorStop(0, 'rgba(255,200,100,0.4)');
+  subGrad.addColorStop(0.5, 'rgba(255,230,170,0.95)');
+  subGrad.addColorStop(1, 'rgba(255,200,100,0.4)');
+  ctx.fillStyle = subGrad;
+  ctx.shadowColor = 'rgba(255,150,0,0.5)';
+  ctx.shadowBlur = 20;
+  ctx.fillText(`✦  TẾT ${TET_LABEL}  ✦`, cx, cy + 165);
+  ctx.shadowBlur = 0;
+
+  // === Year text ===
+  ctx.font = '44px Georgia, serif';
+  ctx.fillStyle = 'rgba(255,200,100,0.55)';
+  ctx.fillText('Năm Bính Ngọ — 2026', cx, cy + 250);
+
+  // === Bottom ornament ===
+  ctx.fillStyle = `rgba(255,200,50,${ornAlpha * 0.5})`;
+  ctx.font = '30px Georgia, serif';
+  ctx.fillText('◆ ◇ ◆', cx, cy + 310);
+
+  ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+// ============ ANIMATION LOOP ============
+let frame = 0;
+
+function animate() {
+  frame++;
+  const cd = getCountdown();
+
+  // State transitions
+  if (cd.done && gameState !== 'celebrate') {
+    gameState = 'celebrate';
+    celebrateStartFrame = frame;
+    document.getElementById('wishes').style.display = 'block';
+    document.getElementById('lixi-section').style.display = 'block';
+    document.getElementById('scroll-hint').style.display = 'block';
+    document.getElementById('fw-overlay').style.display = 'block';
+    overlayActive = true;
+    document.body.style.overflowY = 'auto';
+  } else if (!cd.done && cd.total <= 10 && gameState === 'countdown') {
+    gameState = 'final10';
+  }
+
+  // Detect second change for final10 pop effect
+  if (gameState === 'final10') {
+    const curSec = Math.ceil(cd.total);
+    if (curSec !== lastSecond) {
+      lastSecond = curSec;
+      numberTargetScale = 1.35;
+      setTimeout(() => { numberTargetScale = 1; }, 180);
+      // Spawn burst particles around the number
+      const burstCx = W / 2, burstCy = H / 2;
+      for (let i = 0; i < 30; i++) {
+        final10Particles.push(new CountdownParticle(burstCx + rand(-80, 80), burstCy + rand(-80, 80)));
+      }
+    }
+  }
+
+  ctx.clearRect(0, 0, W, H);
+  ctx.drawImage(bgCanvas, 0, 0);
+
+  // Always draw ambient effects
+  drawLanternGlows(frame);
+  for (const f of fogWisps) { f.update(frame); f.draw(); }
+  for (const e of embers) { e.update(frame); e.draw(); }
+  for (const p of petals) { p.update(frame); p.draw(); }
+  for (const p of lightParticles) { p.update(frame); p.draw(); }
+  for (const f of fireflies) { f.update(frame); f.draw(); }
+
+  // Sparkle bursts
+  if (frame - lastBurst > 180) {
+    const bp = burstPts[randInt(0, burstPts.length)];
+    spawnBurst(bp.x, bp.y);
+    lastBurst = frame;
+  }
+  sparkles = sparkles.filter(s => !s.isDead());
+  for (const s of sparkles) { s.update(); s.draw(); }
+
+  // State-specific rendering
+  if (gameState === 'countdown') {
+    drawNormalCountdown(frame);
+  } else if (gameState === 'final10') {
+    drawFinal10(frame, cd.total);
+  } else if (gameState === 'celebrate') {
+    drawCelebrate(frame);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+
+// ============ FIREWORK OVERLAY (covers entire page including wishes) ============
+const fwCanvas = document.getElementById('fw-overlay');
+const fwCtx = fwCanvas.getContext('2d');
+
+let overlayFW = [];
+let overlayRockets = [];
+let overlayFlash = 0;
+let overlayActive = false;
+
+function resizeOverlay() {
+  fwCanvas.width = window.innerWidth;
+  fwCanvas.height = window.innerHeight;
+}
+resizeOverlay();
+window.addEventListener('resize', resizeOverlay);
+
+class OverlayRocket {
+  constructor() {
+    this.x = rand(window.innerWidth * 0.1, window.innerWidth * 0.9);
+    this.y = window.innerHeight + 10;
+    this.speedY = rand(-14, -8);
+    this.speedX = rand(-1.5, 1.5);
+    this.targetY = rand(window.innerHeight * 0.1, window.innerHeight * 0.4);
+    this.exploded = false;
+    this.trail = [];
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y });
+    if (this.trail.length > 12) this.trail.shift();
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.speedY += 0.12;
+    if (this.y <= this.targetY || this.speedY >= -1) this.exploded = true;
+  }
+  draw() {
+    for (let i = 0; i < this.trail.length; i++) {
+      const t = this.trail[i];
+      const a = (i / this.trail.length) * 0.5;
+      fwCtx.fillStyle = `rgba(255,200,100,${a})`;
+      fwCtx.beginPath(); fwCtx.arc(t.x, t.y, 2 * (i / this.trail.length), 0, Math.PI * 2); fwCtx.fill();
+    }
+    const rg = fwCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 10);
+    rg.addColorStop(0, 'rgba(255,255,230,0.9)');
+    rg.addColorStop(1, 'rgba(255,200,100,0)');
+    fwCtx.fillStyle = rg;
+    fwCtx.beginPath(); fwCtx.arc(this.x, this.y, 10, 0, Math.PI * 2); fwCtx.fill();
+  }
+}
+
+class OverlayParticle {
+  constructor(x, y, color, type) {
+    this.x = x; this.y = y;
+    this.color = color;
+    this.angle = rand(0, Math.PI * 2);
+    this.speed = type === 'willow' ? rand(2, 10) : rand(3, 12);
+    this.friction = type === 'willow' ? 0.975 : rand(0.94, 0.97);
+    this.gravity = type === 'willow' ? rand(0.04, 0.1) : rand(0.02, 0.08);
+    this.alpha = 1;
+    this.decay = type === 'willow' ? rand(0.003, 0.007) : rand(0.006, 0.015);
+    this.r = rand(1.5, 3.5);
+    this.trail = [];
+    this.trailLen = type === 'willow' ? 12 : 6;
+    this.twinkle = type === 'sparkle';
+    this.twinklePhase = rand(0, Math.PI * 2);
+    if (type === 'ring') { this.speed = rand(7, 9); this.friction = 0.96; }
+  }
+  update() {
+    this.trail.push({ x: this.x, y: this.y, a: this.alpha });
+    if (this.trail.length > this.trailLen) this.trail.shift();
+    this.speed *= this.friction;
+    this.x += Math.cos(this.angle) * this.speed;
+    this.y += Math.sin(this.angle) * this.speed + this.gravity;
+    this.alpha -= this.decay;
+    if (this.twinkle) this.twinklePhase += 0.3;
+  }
+  draw() {
+    if (this.alpha <= 0) return;
+    const [r, g, b] = this.color;
+    let da = this.alpha;
+    if (this.twinkle) da *= (0.3 + 0.7 * Math.abs(Math.sin(this.twinklePhase)));
+    for (let i = 0; i < this.trail.length; i++) {
+      const t = this.trail[i];
+      const ta = (t.a || da) * (i / this.trail.length) * 0.3;
+      fwCtx.fillStyle = `rgba(${r},${g},${b},${ta})`;
+      fwCtx.beginPath(); fwCtx.arc(t.x, t.y, this.r * 0.4, 0, Math.PI * 2); fwCtx.fill();
+    }
+    const glR = this.r * 4;
+    const gl = fwCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glR);
+    gl.addColorStop(0, `rgba(255,255,255,${da * 0.8})`);
+    gl.addColorStop(0.2, `rgba(${r},${g},${b},${da * 0.7})`);
+    gl.addColorStop(0.6, `rgba(${r},${g},${b},${da * 0.2})`);
+    gl.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    fwCtx.fillStyle = gl;
+    fwCtx.beginPath(); fwCtx.arc(this.x, this.y, glR, 0, Math.PI * 2); fwCtx.fill();
+  }
+  isDead() { return this.alpha <= 0; }
+}
+
+function overlayExplode(x, y) {
+  overlayFlash = 0.2;
+  const color = fwColors[randInt(0, fwColors.length)];
+  const types = ['burst', 'burst', 'willow', 'ring', 'sparkle'];
+  const type = types[randInt(0, types.length)];
+  const count = type === 'ring' ? 50 : randInt(60, 120);
+
+  if (type === 'ring') {
+    const step = (Math.PI * 2) / count;
+    for (let i = 0; i < count; i++) {
+      const p = new OverlayParticle(x, y, color, 'ring');
+      p.angle = step * i;
+      overlayFW.push(p);
+    }
+    const c2 = fwColors[randInt(0, fwColors.length)];
+    for (let i = 0; i < 25; i++) { const p = new OverlayParticle(x, y, c2, 'sparkle'); p.speed *= 0.3; overlayFW.push(p); }
+  } else {
+    for (let i = 0; i < count; i++) overlayFW.push(new OverlayParticle(x, y, color, type));
+  }
+  // Inner color
+  if (Math.random() > 0.4) {
+    const c2 = fwColors[randInt(0, fwColors.length)];
+    for (let i = 0; i < 30; i++) { const p = new OverlayParticle(x, y, c2, 'burst'); p.speed *= 0.35; overlayFW.push(p); }
+  }
+}
+
+let overlayTimer = 0;
+function animateOverlay() {
+  if (!overlayActive) { requestAnimationFrame(animateOverlay); return; }
+  overlayTimer++;
+  fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+
+  // Launch
+  if (overlayTimer % 25 === 0) overlayRockets.push(new OverlayRocket());
+  if (overlayTimer % 40 === 0 && Math.random() > 0.4) overlayRockets.push(new OverlayRocket());
+  if (overlayTimer % 100 === 0) { overlayRockets.push(new OverlayRocket()); overlayRockets.push(new OverlayRocket()); }
+
+  // Update rockets
+  for (let i = overlayRockets.length - 1; i >= 0; i--) {
+    overlayRockets[i].update();
+    overlayRockets[i].draw();
+    if (overlayRockets[i].exploded) {
+      overlayExplode(overlayRockets[i].x, overlayRockets[i].y);
+      overlayRockets.splice(i, 1);
+    }
+  }
+
+  // Update particles
+  overlayFW = overlayFW.filter(p => !p.isDead());
+  for (const p of overlayFW) { p.update(); p.draw(); }
+
+  // Flash
+  if (overlayFlash > 0) {
+    fwCtx.fillStyle = `rgba(255,240,200,${overlayFlash})`;
+    fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+    overlayFlash *= 0.85;
+    if (overlayFlash < 0.005) overlayFlash = 0;
+  }
+
+  requestAnimationFrame(animateOverlay);
+}
+animateOverlay();
+
+// ============ SCROLL REVEAL WISHES ============
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add('visible');
+  });
+}, { threshold: 0.15 });
+document.querySelectorAll('.wish-card').forEach(c => observer.observe(c));
+
+// Hide scroll hint after scrolling
+window.addEventListener('scroll', () => {
+  if (window.scrollY > 100) {
+    document.getElementById('scroll-hint').style.opacity = '0';
+  }
+});
+
+// ============ DOWNLOAD ============
+function downloadWallpaper() {
+  const link = document.createElement('a');
+  link.download = 'tet-2026-wallpaper.png';
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+// ============ LÌ XÌ ============
+const lixiConfettiCanvas = document.getElementById('lixi-confetti');
+const lixiConfettiCtx = lixiConfettiCanvas.getContext('2d');
+let lixiConfettiParticles = [];
+let lixiConfettiActive = false;
+let lixiOpened = false;
+
+function resizeLixiConfetti() {
+  lixiConfettiCanvas.width = window.innerWidth;
+  lixiConfettiCanvas.height = window.innerHeight;
+}
+resizeLixiConfetti();
+window.addEventListener('resize', resizeLixiConfetti);
+
+class ConfettiPiece {
+  constructor() {
+    this.x = rand(0, window.innerWidth);
+    this.y = rand(-window.innerHeight * 0.3, -20);
+    this.w = rand(8, 16);
+    this.h = rand(6, 14);
+    this.speedY = rand(2, 6);
+    this.speedX = rand(-1.5, 1.5);
+    this.rotation = rand(0, Math.PI * 2);
+    this.rotSpeed = rand(-0.1, 0.1);
+    this.wobbleAmp = rand(0.5, 2);
+    this.wobbleSpeed = rand(0.02, 0.06);
+    this.wobblePhase = rand(0, Math.PI * 2);
+    this.alpha = 1;
+    this.type = Math.random() > 0.5 ? 'rect' : 'circle';
+    // Festive colors
+    const colors = [
+      [255, 215, 0],    // gold
+      [255, 50, 50],    // red
+      [255, 180, 50],   // orange
+      [255, 100, 150],  // pink
+      [255, 255, 100],  // yellow
+      [255, 80, 80],    // bright red
+      [255, 160, 0],    // amber
+      [200, 50, 50],    // dark red
+    ];
+    this.color = colors[randInt(0, colors.length)];
+  }
+  update(t) {
+    this.y += this.speedY;
+    this.x += this.speedX + Math.sin(t * this.wobbleSpeed + this.wobblePhase) * this.wobbleAmp;
+    this.rotation += this.rotSpeed;
+    if (this.y > window.innerHeight + 30) this.alpha = 0;
+  }
+  draw() {
+    if (this.alpha <= 0) return;
+    const [r, g, b] = this.color;
+    lixiConfettiCtx.save();
+    lixiConfettiCtx.translate(this.x, this.y);
+    lixiConfettiCtx.rotate(this.rotation);
+    lixiConfettiCtx.globalAlpha = this.alpha;
+    lixiConfettiCtx.fillStyle = `rgb(${r},${g},${b})`;
+    if (this.type === 'rect') {
+      lixiConfettiCtx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
+    } else {
+      lixiConfettiCtx.beginPath();
+      lixiConfettiCtx.arc(0, 0, this.w / 2, 0, Math.PI * 2);
+      lixiConfettiCtx.fill();
+    }
+    lixiConfettiCtx.globalAlpha = 1;
+    lixiConfettiCtx.restore();
+  }
+  isDead() { return this.alpha <= 0; }
+}
+
+let confettiFrame = 0;
+function animateConfetti() {
+  if (!lixiConfettiActive) { requestAnimationFrame(animateConfetti); return; }
+  confettiFrame++;
+  lixiConfettiCtx.clearRect(0, 0, lixiConfettiCanvas.width, lixiConfettiCanvas.height);
+
+  // Spawn confetti in first few seconds
+  if (confettiFrame < 180) {
+    for (let i = 0; i < 4; i++) {
+      lixiConfettiParticles.push(new ConfettiPiece());
+    }
+    if (confettiFrame < 30) {
+      for (let i = 0; i < 8; i++) {
+        lixiConfettiParticles.push(new ConfettiPiece());
+      }
+    }
+  }
+
+  lixiConfettiParticles = lixiConfettiParticles.filter(p => !p.isDead());
+  for (const p of lixiConfettiParticles) {
+    p.update(confettiFrame);
+    p.draw();
+  }
+
+  // Stop when all done
+  if (confettiFrame > 180 && lixiConfettiParticles.length === 0) {
+    lixiConfettiActive = false;
+    lixiConfettiCanvas.style.display = 'none';
+  }
+
+  requestAnimationFrame(animateConfetti);
+}
+animateConfetti();
+
+// Click handler for the envelope
+document.getElementById('lixiEnvelope').addEventListener('click', function() {
+  if (lixiOpened) return;
+  lixiOpened = true;
+
+  const envelope = this;
+  envelope.classList.add('opened');
+
+  // Trigger confetti
+  lixiConfettiCanvas.style.display = 'block';
+  lixiConfettiActive = true;
+  confettiFrame = 0;
+
+  // Show content after a delay
+  setTimeout(() => {
+    const content = document.getElementById('lixiContent');
+    content.classList.add('show');
+
+    // Smooth scroll to content
+    setTimeout(() => {
+      content.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, 600);
+
+  // Shrink and fade envelope
+  setTimeout(() => {
+    envelope.style.transition = 'all 0.8s ease';
+    envelope.style.transform = 'scale(0.6)';
+    envelope.style.opacity = '0.3';
+    envelope.style.marginBottom = '-100px';
+  }, 1200);
+});
+</script>
+</body>
+</html>
