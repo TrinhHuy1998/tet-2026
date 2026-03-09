@@ -1,1895 +1,1278 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tết Nguyên Đán 2026 - Countdown</title>
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-  body { background: #1a0000; overflow-x: hidden; }
-  #canvas-wrap {
-    position: relative; width: 100vw; height: 100vh;
-    overflow: hidden;
-  }
-  canvas { display: block; }
-  #fw-overlay {
-    display: none;
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    z-index: 50; pointer-events: none;
-  }
-  #wishes {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(180deg, #1a0000 0%, #200808 15%, #2d0a0a 30%, #3d1515 50%, #2d0a0a 70%, #1a0000 100%);
-    padding: 80px 20px 120px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  #wishes::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      radial-gradient(ellipse at 20% 20%, rgba(255,150,50,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 60%, rgba(255,100,80,0.03) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 80%, rgba(255,200,100,0.03) 0%, transparent 40%);
-    pointer-events: none;
-  }
-  #wishes h2 {
-    font-family: 'Georgia', serif;
-    font-size: clamp(36px, 5vw, 68px);
-    color: #ffd700;
-    text-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,150,0,0.2);
-    margin-bottom: 15px;
-    position: relative;
-  }
-  .wishes-subtitle {
-    font-family: 'Georgia', serif;
-    font-size: clamp(16px, 2vw, 22px);
-    color: rgba(255, 200, 100, 0.5);
-    margin-bottom: 50px;
-    letter-spacing: 4px;
-  }
-  .wishes-divider {
-    width: 200px; height: 2px; margin: 0 auto 50px;
-    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.5), transparent);
-    position: relative;
-  }
-  .wishes-divider::after {
-    content: '◆'; position: absolute; top: -10px; left: 50%;
-    transform: translateX(-50%); color: rgba(255,200,50,0.5);
-    font-size: 14px; background: #2d0a0a; padding: 0 10px;
-  }
-  .wish-card {
-    max-width: 700px; margin: 0 auto 45px;
-    background: linear-gradient(135deg, rgba(120,20,20,0.5), rgba(80,10,10,0.4));
-    border: 1px solid rgba(255, 200, 50, 0.15);
-    border-radius: 24px;
-    padding: 45px 55px;
-    opacity: 0; transform: translateY(50px) scale(0.95);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(5px);
-  }
-  .wish-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(180deg, rgba(255,200,100,0.04), transparent);
-    pointer-events: none; border-radius: 24px 24px 0 0;
-  }
-  .wish-card::after {
-    content: '';
-    position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.4), transparent);
-  }
-  .wish-card.visible {
-    opacity: 1; transform: translateY(0) scale(1);
-  }
-  .wish-card .wish-icon {
-    font-size: 56px; margin-bottom: 18px; display: block;
-    filter: drop-shadow(0 0 15px rgba(255,200,0,0.3));
-  }
-  .wish-card p {
-    font-family: 'Georgia', serif;
-    font-size: clamp(18px, 2.5vw, 26px);
-    color: #ffe0a0;
-    line-height: 1.8;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
-  .wish-card .wish-author {
-    margin-top: 15px;
-    font-size: 16px;
-    color: rgba(255, 200, 100, 0.5);
-    font-style: italic;
-  }
-  .wishes-footer {
-    margin-top: 60px;
-    padding: 40px;
-    font-family: 'Georgia', serif;
-    color: rgba(255, 200, 100, 0.4);
-    font-size: 18px;
-  }
-  .wishes-footer .footer-ornament {
-    font-size: 28px;
-    margin-bottom: 15px;
-    display: block;
-    letter-spacing: 15px;
-  }
-  #scroll-hint {
-    display: none;
-    position: fixed; bottom: 30px; left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255, 200, 100, 0.7);
-    font-family: 'Georgia', serif;
-    font-size: 18px;
-    animation: bounce 2s infinite;
-    z-index: 100;
-    pointer-events: none;
-  }
-  @keyframes bounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-12px); }
-  }
-  #download {
-    position: fixed; bottom: 30px; right: 30px;
-    padding: 14px 28px; background: linear-gradient(135deg, #d4af37, #f5d060);
-    color: #8b0000; border: none; border-radius: 30px;
-    font-size: 16px; font-weight: bold; cursor: pointer;
-    box-shadow: 0 4px 20px rgba(212,175,55,0.5);
-    z-index: 100; transition: all 0.3s;
-    font-family: 'Georgia', serif;
-  }
-  #download:hover { transform: scale(1.05); box-shadow: 0 6px 30px rgba(212,175,55,0.7); }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Trịnh Đình Huy — Mobile Team Leader</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  /* ============ LÌ XÌ SECTION ============ */
-  #lixi-section {
-    display: none;
-    min-height: 100vh;
-    background: linear-gradient(180deg, #1a0000 0%, #2a0505 20%, #3d1010 40%, #4a1515 55%, #3d1010 70%, #2a0505 85%, #1a0000 100%);
-    padding: 80px 20px 120px;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-  }
-  #lixi-section::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background:
-      radial-gradient(ellipse at 30% 30%, rgba(255,80,30,0.05) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 50%, rgba(255,180,50,0.04) 0%, transparent 50%),
-      radial-gradient(ellipse at 50% 70%, rgba(255,100,60,0.03) 0%, transparent 40%);
-    pointer-events: none;
-  }
+    :root {
+      --black:      #09090B;
+      --dark:       #18181B;
+      --gray-900:   #27272A;
+      --gray-700:   #3F3F46;
+      --gray-500:   #71717A;
+      --gray-400:   #A1A1AA;
+      --gray-300:   #D4D4D8;
+      --gray-200:   #E4E4E7;
+      --gray-100:   #F4F4F5;
+      --white:      #FAFAFA;
+      --pure-white: #FFFFFF;
+      --accent:     #2563EB;
+      --accent-light: #EFF6FF;
+      --accent-dim: #93C5FD;
+      --green:      #16A34A;
+      --radius:     12px;
+      --radius-sm:  8px;
+    }
 
-  .lixi-intro { margin-bottom: 50px; position: relative; }
-  .lixi-above-text {
-    font-size: 24px; color: rgba(255,200,50,0.4);
-    margin-bottom: 20px; letter-spacing: 12px;
-    font-family: 'Georgia', serif;
-  }
-  .lixi-title {
-    font-family: 'Georgia', serif;
-    font-size: clamp(32px, 5vw, 62px);
-    color: #ffd700;
-    text-shadow: 0 0 40px rgba(255,200,0,0.5), 0 0 80px rgba(255,150,0,0.2);
-    margin-bottom: 15px;
-  }
-  .lixi-desc {
-    font-family: 'Georgia', serif;
-    font-size: clamp(14px, 2vw, 20px);
-    color: rgba(255,200,100,0.5);
-    letter-spacing: 2px;
-  }
-  .lixi-intro-divider {
-    width: 150px; height: 1px; margin: 30px auto 0;
-    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.4), transparent);
-  }
+    html { scroll-behavior: smooth; }
 
-  /* === Bao Lì Xì === */
-  .lixi-envelope {
-    position: relative;
-    width: 280px; height: 420px;
-    margin: 0 auto 50px;
-    cursor: pointer;
-    perspective: 800px;
-    transition: transform 0.3s ease;
-  }
-  .lixi-envelope:hover { transform: scale(1.05); }
-  .lixi-envelope:active { transform: scale(0.98); }
-  .lixi-envelope.opened { cursor: default; pointer-events: none; }
-  .lixi-envelope.opened:hover { transform: none; }
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--white);
+      color: var(--black);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+      overflow-x: hidden;
+    }
 
-  .lixi-body {
-    position: absolute; top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: linear-gradient(160deg, #e83030 0%, #cc2020 30%, #b01818 60%, #991515 100%);
-    border-radius: 16px;
-    box-shadow:
-      0 8px 40px rgba(0,0,0,0.5),
-      0 0 60px rgba(255,50,30,0.15),
-      inset 0 1px 0 rgba(255,255,255,0.1);
-    overflow: hidden;
-    z-index: 2;
-  }
-  .lixi-border-pattern {
-    position: absolute; top: 8px; left: 8px; right: 8px; bottom: 8px;
-    border: 2px solid rgba(255,200,50,0.35);
-    border-radius: 12px;
-    pointer-events: none;
-  }
-  .lixi-border-pattern::before {
-    content: '';
-    position: absolute; top: 4px; left: 4px; right: 4px; bottom: 4px;
-    border: 1px solid rgba(255,200,50,0.15);
-    border-radius: 10px;
-  }
+    h1, h2, h3, h4, h5, h6 {
+      font-family: 'Archivo', sans-serif;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
 
-  .lixi-seal {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -60%);
-    width: 120px; height: 120px;
-    background: radial-gradient(circle, #ffd700, #e6a800, #cc8800);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 72px; font-weight: bold;
-    color: #8b0000;
-    box-shadow:
-      0 4px 20px rgba(255,200,0,0.4),
-      0 0 40px rgba(255,200,0,0.2),
-      inset 0 -2px 6px rgba(0,0,0,0.15),
-      inset 0 2px 4px rgba(255,255,200,0.3);
-    z-index: 5;
-    font-family: 'Georgia', serif;
-  }
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 1rem; left: 1rem; right: 1rem;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      height: 60px;
+      background: rgba(250,250,250,0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+    }
 
-  .lixi-text-front {
-    position: absolute;
-    bottom: 35px; left: 50%; transform: translateX(-50%);
-    text-align: center; z-index: 4;
-  }
-  .lixi-front-top, .lixi-front-bottom {
-    display: block;
-    font-family: 'Georgia', serif;
-    font-weight: bold;
-    color: #ffd700;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-  .lixi-front-top { font-size: 22px; letter-spacing: 6px; margin-bottom: 4px; }
-  .lixi-front-bottom { font-size: 20px; letter-spacing: 6px; }
+    .nav-logo {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1.0625rem;
+      font-weight: 800;
+      color: var(--black);
+      text-decoration: none;
+      letter-spacing: -0.04em;
+    }
+    .nav-logo span { color: var(--accent); }
 
-  /* Corner ornaments */
-  .lixi-corner {
-    position: absolute; width: 30px; height: 30px; z-index: 4;
-    border-color: rgba(255,200,50,0.5); border-style: solid;
-  }
-  .lixi-corner-tl { top: 20px; left: 20px; border-width: 2px 0 0 2px; border-radius: 4px 0 0 0; }
-  .lixi-corner-tr { top: 20px; right: 20px; border-width: 2px 2px 0 0; border-radius: 0 4px 0 0; }
-  .lixi-corner-bl { bottom: 20px; left: 20px; border-width: 0 0 2px 2px; border-radius: 0 0 0 4px; }
-  .lixi-corner-br { bottom: 20px; right: 20px; border-width: 0 2px 2px 0; border-radius: 0 0 4px 0; }
+    .nav-links {
+      display: flex;
+      gap: 0.25rem;
+      list-style: none;
+      align-items: center;
+    }
 
-  /* Flap (top part) */
-  .lixi-flap {
-    position: absolute;
-    top: -2px; left: 0; width: 100%;
-    height: 130px;
-    z-index: 6;
-    transform-origin: top center;
-    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .lixi-flap-inner {
-    width: 100%; height: 100%;
-    background: linear-gradient(180deg, #d42828 0%, #c02020 100%);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-    border-radius: 16px 16px 0 0;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    position: relative;
-  }
-  .lixi-flap-inner::after {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-    background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, transparent 60%);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-  }
-  .lixi-envelope.opened .lixi-flap {
-    transform: rotateX(180deg);
-  }
+    .nav-links a {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-decoration: none;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      transition: color 0.2s, background 0.2s;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+    .nav-links a:hover { color: var(--black); background: var(--gray-100); }
 
-  /* Shine effect */
-  .lixi-shine {
-    position: absolute; top: 0; left: -100%; width: 60%; height: 100%;
-    background: linear-gradient(120deg, transparent 30%, rgba(255,255,200,0.15) 50%, transparent 70%);
-    z-index: 7; pointer-events: none;
-    animation: lixiShine 4s ease-in-out infinite;
-    border-radius: 16px;
-  }
-  @keyframes lixiShine {
-    0%, 100% { left: -100%; }
-    50% { left: 150%; }
-  }
+    .nav-cta {
+      background: var(--dark) !important;
+      color: var(--white) !important;
+      transition: background 0.2s !important;
+    }
+    .nav-cta:hover { background: var(--accent) !important; }
 
-  .lixi-tap-hint {
-    position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%);
-    font-family: 'Georgia', serif;
-    font-size: 16px; color: rgba(255,200,100,0.6);
-    animation: lixiPulse 2s ease-in-out infinite;
-    white-space: nowrap;
-  }
-  .lixi-envelope.opened .lixi-tap-hint { display: none; }
-  @keyframes lixiPulse {
-    0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
-    50% { opacity: 1; transform: translateX(-50%) scale(1.05); }
-  }
+    /* Hamburger */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 10px;
+      min-width: 44px;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      border: none;
+      background: none;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: var(--black);
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-  /* === Opened Content === */
-  .lixi-content {
-    display: none;
-    max-width: 650px; margin: 0 auto;
-    opacity: 0;
-    transform: translateY(40px);
-    animation: lixiReveal 1s ease forwards;
-    animation-delay: 0.5s;
-  }
-  .lixi-content.show {
-    display: block;
-  }
-  @keyframes lixiReveal {
-    to { opacity: 1; transform: translateY(0); }
-  }
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 76px; left: 1rem; right: 1rem;
+      z-index: 99;
+      background: rgba(250,250,250,0.97);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--gray-200);
+      border-radius: 14px;
+      padding: 0.75rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--black);
+      text-decoration: none;
+      padding: 0.875rem 1rem;
+      border-radius: 8px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+    .mobile-menu a:hover { background: var(--gray-100); }
+    .mobile-menu .cta-mobile {
+      background: var(--dark);
+      color: var(--white);
+      justify-content: center;
+      margin-top: 0.25rem;
+    }
+    .mobile-menu .cta-mobile:hover { background: var(--accent); }
 
-  .lixi-money-reveal { text-align: center; }
+    /* ── HERO ── */
+    #hero {
+      min-height: 100svh;
+      display: flex;
+      align-items: center;
+      padding: 100px clamp(1.25rem, 5vw, 4rem) 4rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
 
-  .lixi-congrats {
-    font-family: 'Georgia', serif;
-    font-size: clamp(24px, 4vw, 40px);
-    color: #ffd700;
-    text-shadow: 0 0 30px rgba(255,200,0,0.5);
-    margin-bottom: 20px;
-    animation: congratsPulse 2s ease-in-out infinite;
-  }
-  @keyframes congratsPulse {
-    0%, 100% { text-shadow: 0 0 30px rgba(255,200,0,0.5); }
-    50% { text-shadow: 0 0 50px rgba(255,200,0,0.8), 0 0 80px rgba(255,150,0,0.3); }
-  }
+    .hero-inner {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 3.5rem;
+      align-items: center;
+      width: 100%;
+    }
 
-  .lixi-amount-wrap {
-    position: relative;
-    display: inline-block;
-    padding: 25px 60px;
-    margin-bottom: 30px;
-    background: linear-gradient(135deg, rgba(140,20,20,0.6), rgba(80,8,8,0.5));
-    border: 2px solid rgba(255,200,50,0.3);
-    border-radius: 20px;
-    overflow: hidden;
-  }
-  .lixi-amount-wrap::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(180deg, rgba(255,255,200,0.06), transparent);
-    border-radius: 20px 20px 0 0;
-    pointer-events: none;
-  }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      color: var(--green);
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      padding: 0.375rem 0.875rem;
+      border-radius: 999px;
+      margin-bottom: 1.75rem;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 7px; height: 7px;
+      background: var(--green);
+      border-radius: 50%;
+      animation: pulse-dot 2s infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
 
-  .lixi-amount {
-    font-family: 'Georgia', serif;
-    font-size: clamp(48px, 10vw, 90px);
-    font-weight: bold;
-    background: linear-gradient(135deg, #fff5c8, #ffd700, #e6a800, #ffd700, #fff5c8);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    filter: drop-shadow(0 0 20px rgba(255,200,0,0.5));
-    animation: moneyShimmer 3s ease-in-out infinite;
-    letter-spacing: 3px;
-  }
-  @keyframes moneyShimmer {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-  }
-  .lixi-currency {
-    font-size: 0.5em;
-    vertical-align: super;
-  }
+    .hero-name {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(2.75rem, 7vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -0.045em;
+      line-height: 1.05;
+      color: var(--black);
+      margin-bottom: 1rem;
+    }
+    .hero-name .accent { color: var(--accent); }
 
-  .lixi-divider-gold {
-    width: 200px; height: 2px; margin: 0 auto 35px;
-    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.5), transparent);
-    position: relative;
-  }
-  .lixi-divider-gold::after {
-    content: '◆';
-    position: absolute; top: -10px; left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,200,50,0.5);
-    font-size: 14px;
-    background: linear-gradient(180deg, #3d1010, #4a1515);
-    padding: 0 12px;
-  }
+    .hero-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--gray-500);
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      letter-spacing: -0.01em;
+    }
 
-  .lixi-meaning { position: relative; }
+    .hero-desc {
+      font-size: 1.0625rem;
+      color: var(--gray-700);
+      max-width: 540px;
+      line-height: 1.75;
+      margin-bottom: 2.5rem;
+    }
 
-  .meaning-title {
-    font-family: 'Georgia', serif;
-    font-size: clamp(20px, 3vw, 30px);
-    color: #ffd700;
-    text-shadow: 0 0 20px rgba(255,200,0,0.3);
-    margin-bottom: 30px;
-    letter-spacing: 3px;
-  }
+    .hero-actions {
+      display: flex;
+      gap: 0.875rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
 
-  .meaning-card {
-    max-width: 500px; margin: 0 auto 16px;
-    padding: 18px 30px;
-    background: linear-gradient(135deg, rgba(120,18,18,0.5), rgba(80,8,8,0.4));
-    border: 1px solid rgba(255,200,50,0.15);
-    border-radius: 16px;
-    backdrop-filter: blur(5px);
-    position: relative;
-    overflow: hidden;
-    text-align: left;
-  }
-  .meaning-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 50%;
-    background: linear-gradient(180deg, rgba(255,200,100,0.03), transparent);
-    pointer-events: none; border-radius: 16px 16px 0 0;
-  }
-  .meaning-card-wide { max-width: 500px; }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.875rem;
+      background: var(--dark);
+      color: var(--white);
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      cursor: pointer;
+      min-height: 44px;
+      letter-spacing: -0.01em;
+    }
+    .btn-primary:hover { background: var(--accent); transform: translateY(-2px); }
 
-  .meaning-text {
-    font-family: 'Georgia', serif;
-    font-size: clamp(15px, 2vw, 19px);
-    color: #ffe0a0;
-    line-height: 1.7;
-  }
-  .meaning-number {
-    display: inline-block;
-    width: 48px; height: 48px;
-    line-height: 48px;
-    text-align: center;
-    background: linear-gradient(135deg, #ffd700, #e6a800);
-    color: #8b0000;
-    font-weight: bold;
-    font-size: 22px;
-    border-radius: 50%;
-    margin-right: 14px;
-    vertical-align: middle;
-    box-shadow: 0 2px 10px rgba(255,200,0,0.3);
-  }
-  .meaning-word {
-    display: inline-block;
-    font-weight: bold;
-    color: #ffd700;
-    margin-right: 10px;
-    font-size: 1.1em;
-    vertical-align: middle;
-  }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.875rem;
+      background: transparent;
+      color: var(--black);
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      border: 2px solid var(--gray-300);
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      cursor: pointer;
+      min-height: 44px;
+      letter-spacing: -0.01em;
+    }
+    .btn-secondary:hover { border-color: var(--dark); background: var(--gray-100); transform: translateY(-2px); }
 
-  .meaning-separator {
-    font-size: 18px;
-    color: rgba(255,200,50,0.4);
-    margin: 20px 0;
-    letter-spacing: 10px;
-    font-family: 'Georgia', serif;
-  }
+    .hero-social {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
 
-  .meaning-final {
-    margin-top: 30px;
-  }
-  .meaning-final-divider {
-    width: 120px; height: 1px; margin: 20px auto;
-    background: linear-gradient(90deg, transparent, rgba(255,200,50,0.3), transparent);
-  }
-  .meaning-summary-label {
-    font-family: 'Georgia', serif;
-    font-size: clamp(16px, 2vw, 20px);
-    color: rgba(255,220,150,0.8);
-    margin-bottom: 10px;
-  }
-  .meaning-summary-text {
-    font-family: 'Georgia', serif;
-    font-size: clamp(20px, 3vw, 30px);
-    color: #ffd700;
-    font-style: italic;
-    text-shadow: 0 0 25px rgba(255,200,0,0.4);
-    margin-bottom: 18px;
-    line-height: 1.5;
-  }
-  .meaning-summary-wish {
-    font-family: 'Georgia', serif;
-    font-size: clamp(16px, 2.2vw, 22px);
-    color: rgba(255,220,150,0.85);
-    line-height: 1.8;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  }
+    .social-link {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      color: var(--gray-500);
+      text-decoration: none;
+      transition: color 0.2s;
+      min-height: 44px;
+      cursor: pointer;
+    }
+    .social-link:hover { color: var(--black); }
+    .social-link svg { width: 16px; height: 16px; flex-shrink: 0; }
 
-  /* Confetti canvas for lì xì */
-  #lixi-confetti {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-    z-index: 200;
-  }
-</style>
+    .hero-avatar {
+      width: 300px;
+      height: 300px;
+      border-radius: 24px;
+      background: var(--accent-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 2px solid var(--gray-200);
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.1), 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    /* ── DIVIDER ── */
+    .divider { height: 1px; background: var(--gray-200); max-width: 1200px; margin: 0 auto; }
+
+    /* ── SECTIONS COMMON ── */
+    section { padding: 5rem clamp(1.25rem, 5vw, 4rem); max-width: 1200px; margin: 0 auto; }
+
+    .section-label {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 0.875rem;
+    }
+
+    .section-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: clamp(1.875rem, 4.5vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      color: var(--black);
+      margin-bottom: 1rem;
+      line-height: 1.15;
+    }
+
+    .section-desc {
+      font-size: 1.0625rem;
+      color: var(--gray-500);
+      max-width: 560px;
+      line-height: 1.75;
+      margin-bottom: 3rem;
+    }
+
+    /* ── EXPERIENCE ── */
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+
+    .timeline-item {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: 2.5rem;
+      padding: 2.5rem 0;
+      border-bottom: 1px solid var(--gray-200);
+    }
+    .timeline-item:last-child { border-bottom: none; }
+
+    .timeline-date {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      color: var(--gray-500);
+      padding-top: 0.25rem;
+      line-height: 1.5;
+    }
+    .timeline-date .current {
+      display: inline-block;
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--green);
+      background: #f0fdf4;
+      border: 1.5px solid #bbf7d0;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      margin-top: 0.4rem;
+    }
+
+    .timeline-role {
+      font-family: 'Archivo', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--black);
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.02em;
+    }
+    .timeline-company {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.9375rem;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1rem;
+    }
+    .timeline-desc {
+      font-size: 0.9375rem;
+      color: var(--gray-700);
+      line-height: 1.75;
+      margin-bottom: 1.25rem;
+    }
+
+    /* Inline project cards */
+    .project-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 0.875rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .project-inline {
+      padding: 1.125rem 1.25rem;
+      border: 1.5px solid var(--gray-200);
+      border-radius: var(--radius-sm);
+      background: var(--pure-white);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .project-inline:hover {
+      border-color: var(--gray-300);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    }
+
+    .project-inline-name {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--black);
+      margin-bottom: 0.5rem;
+    }
+    .project-inline-desc {
+      font-size: 0.875rem;
+      color: var(--gray-700);
+      line-height: 1.65;
+      margin-bottom: 0.75rem;
+    }
+    .project-inline-desc:last-child { margin-bottom: 0; }
+
+    .store-links {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .store-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: 'Archivo', sans-serif;
+      color: var(--gray-700);
+      text-decoration: none;
+      border: 1.5px solid var(--gray-300);
+      padding: 0.3rem 0.625rem;
+      border-radius: 6px;
+      background: var(--white);
+      min-height: 32px;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      cursor: pointer;
+    }
+    .store-link:hover { border-color: var(--dark); background: var(--gray-100); color: var(--black); }
+    .store-link svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    .website-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .website-link:hover { text-decoration: underline; }
+    .website-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    .timeline-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .timeline-tag {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.25rem 0.625rem;
+      background: var(--gray-100);
+      color: var(--gray-700);
+      border-radius: 6px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    /* ── SKILLS ── */
+    #skills {
+      background: var(--dark);
+      max-width: 100%;
+      padding: 5rem clamp(1.25rem, 5vw, 4rem);
+    }
+    #skills .inner { max-width: 1200px; margin: 0 auto; }
+    #skills .section-label { color: var(--accent-dim); }
+    #skills .section-title { color: var(--white); }
+    #skills .section-desc { color: var(--gray-500); }
+
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .skill-category {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+      transition: border-color 0.25s, background 0.25s;
+      cursor: default;
+    }
+    .skill-category:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(37,99,235,0.3);
+    }
+
+    .skill-category-title {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 800;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.25rem;
+    }
+
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+
+    .skill-tag {
+      font-size: 0.8125rem;
+      font-weight: 500;
+      padding: 0.3rem 0.75rem;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255,255,255,0.1);
+      color: var(--gray-400);
+      background: rgba(255,255,255,0.04);
+      font-family: 'Space Grotesk', sans-serif;
+    }
+    .skill-tag.primary {
+      border-color: rgba(37,99,235,0.5);
+      color: var(--accent-dim);
+      background: rgba(37,99,235,0.1);
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      background: var(--dark);
+      max-width: 100%;
+      padding: 5rem clamp(1.25rem, 5vw, 4rem);
+    }
+    #contact .inner { max-width: 1200px; margin: 0 auto; }
+    #contact .section-label { color: var(--accent-dim); }
+    #contact .section-title { color: var(--white); }
+    #contact .section-desc { color: var(--gray-500); margin-bottom: 0; }
+
+    .contact-header { text-align: center; margin-bottom: 3rem; }
+    .contact-header .section-label,
+    .contact-header .section-title { text-align: center; }
+    .contact-header .section-desc { margin: 0 auto; }
+
+    .contact-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+    }
+
+    .contact-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2.25rem 1.5rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: var(--radius);
+      text-decoration: none;
+      transition: background 0.25s, border-color 0.25s, transform 0.25s;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+    }
+    .contact-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(37,99,235,0.12) 0%, transparent 65%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .contact-card:hover {
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(37,99,235,0.35);
+      transform: translateY(-5px);
+    }
+    .contact-card:hover::before { opacity: 1; }
+
+    .contact-card-icon {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: rgba(37,99,235,0.12);
+      border: 1px solid rgba(37,99,235,0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      flex-shrink: 0;
+    }
+    .contact-card-icon svg { width: 24px; height: 24px; color: var(--accent-dim); }
+
+    .contact-card-label {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #52525B;
+      margin-bottom: 0.4rem;
+    }
+    .contact-card-value {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 1.5rem;
+      word-break: break-all;
+      line-height: 1.5;
+    }
+    .contact-card-action {
+      font-family: 'Archivo', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--accent-dim);
+      margin-top: auto;
+      padding: 0.375rem 1rem;
+      border: 1px solid rgba(147,197,253,0.2);
+      border-radius: 999px;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .contact-card:hover .contact-card-action {
+      background: rgba(37,99,235,0.15);
+      border-color: rgba(147,197,253,0.4);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 1.5rem clamp(1.25rem, 5vw, 4rem);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: var(--dark);
+      max-width: 100%;
+    }
+    footer .inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+    .footer-copy { font-size: 0.8125rem; color: #52525B; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a {
+      font-size: 0.8125rem;
+      color: #52525B;
+      text-decoration: none;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    /* ── ANIMATIONS ── */
+    @media (prefers-reduced-motion: no-preference) {
+      .fade-in {
+        opacity: 0;
+        transform: translateY(28px);
+        transition: opacity 0.75s cubic-bezier(0.16,1,0.3,1),
+                    transform 0.75s cubic-bezier(0.16,1,0.3,1);
+      }
+      .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+      .fade-left {
+        opacity: 0;
+        transform: translateX(-22px);
+        transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1),
+                    transform 0.7s cubic-bezier(0.16,1,0.3,1);
+      }
+      .fade-left.visible { opacity: 1; transform: translateX(0); }
+
+      .scale-in {
+        opacity: 0;
+        transform: scale(0.93) translateY(12px);
+        transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+                    transform 0.65s cubic-bezier(0.16,1,0.3,1);
+      }
+      .scale-in.visible { opacity: 1; transform: scale(1) translateY(0); }
+
+      .stagger > * {
+        opacity: 0;
+        transform: translateY(22px);
+        transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1),
+                    transform 0.65s cubic-bezier(0.16,1,0.3,1);
+      }
+      .stagger.visible > *:nth-child(1) { transition-delay: 0ms; }
+      .stagger.visible > *:nth-child(2) { transition-delay: 100ms; }
+      .stagger.visible > *:nth-child(3) { transition-delay: 200ms; }
+      .stagger.visible > *:nth-child(4) { transition-delay: 300ms; }
+      .stagger.visible > *:nth-child(5) { transition-delay: 400ms; }
+      .stagger.visible > *:nth-child(6) { transition-delay: 500ms; }
+      .stagger.visible > * { opacity: 1; transform: translateY(0); }
+    }
+
+    .delay-100 { transition-delay: 100ms !important; }
+    .delay-200 { transition-delay: 200ms !important; }
+    .delay-300 { transition-delay: 300ms !important; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .hero-avatar { width: 240px; height: 240px; }
+    }
+
+    @media (max-width: 768px) {
+      /* Nav */
+      nav { padding: 0 1.25rem; top: 0.75rem; left: 0.75rem; right: 0.75rem; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: flex; }
+
+      /* Mobile menu adjust top */
+      .mobile-menu { top: 72px; }
+
+      /* Hero */
+      #hero {
+        padding: 90px 1.25rem 3rem;
+        min-height: auto;
+        padding-top: max(90px, 5rem);
+      }
+
+      .hero-inner {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+        text-align: center;
+      }
+      .hero-inner > div:first-child { order: 2; }
+
+      .hero-avatar {
+        order: 1;
+        width: 120px;
+        height: 120px;
+        border-radius: 20px;
+        margin: 0 auto;
+        box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+      }
+
+      .hero-badge { justify-content: center; }
+      .hero-desc { max-width: 100%; }
+      .hero-actions { justify-content: center; }
+      .hero-social { justify-content: center; gap: 0.5rem; }
+
+      /* Timeline */
+      .timeline-item { grid-template-columns: 1fr; gap: 0.25rem; }
+      .timeline-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      /* Skills */
+      .skills-grid { grid-template-columns: 1fr; }
+
+      /* Contact */
+      .contact-cards { grid-template-columns: 1fr; gap: 0.875rem; }
+
+      /* Sections */
+      section { padding: 3.5rem 1.25rem; }
+      #skills { padding: 3.5rem 1.25rem; }
+      #contact { padding: 3.5rem 1.25rem; }
+
+      /* Footer */
+      footer .inner { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 480px) {
+      nav { top: 0.5rem; left: 0.5rem; right: 0.5rem; }
+      .mobile-menu { top: 68px; left: 0.5rem; right: 0.5rem; }
+      .hero-name { font-size: clamp(2.25rem, 9vw, 2.75rem); }
+      .section-title { font-size: 1.875rem; }
+      .contact-card { padding: 1.75rem 1.25rem; }
+    }
+  </style>
 </head>
 <body>
-<div id="canvas-wrap">
-  <canvas id="canvas"></canvas>
-</div>
-<canvas id="fw-overlay"></canvas>
-<div id="wishes">
-  <h2>Lời Chúc Năm Mới</h2>
-  <p class="wishes-subtitle">TẾT BÍNH NGỌ 2026</p>
-  <div class="wishes-divider"></div>
-  <div class="wish-card">
-    <span class="wish-icon">🧧</span>
-    <p>
-    Xuân về gõ cửa tim anh<br>
-    Nắng hong nỗi nhớ, ngọt lành môi em<br><br>
 
-    Mai vàng trước ngõ êm đềm<br>
-    Đào hồng khẽ nở bên thềm yêu thương<br><br>
+  <!-- ── NAVIGATION ── -->
+  <nav>
+    <a href="#hero" class="nav-logo">HuyTD<span>.</span>dev</a>
+    <ul class="nav-links">
+      <li><a href="#experience">Kinh nghiệm</a></li>
+      <li><a href="#skills">Kỹ năng</a></li>
+      <li><a href="#contact" class="nav-cta">Liên hệ</a></li>
+    </ul>
+    <button class="nav-hamburger" id="hamburger" aria-label="Mở menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
 
-    Năm mới gửi trọn vấn vương<br>
-    Chúc em hạnh phúc, yêu thương đủ đầy<br><br>
+  <!-- ── MOBILE MENU ── -->
+  <nav class="mobile-menu" id="mobileMenu" aria-label="Menu di động">
+    <a href="#experience" onclick="closeMenu()">Kinh nghiệm</a>
+    <a href="#skills" onclick="closeMenu()">Kỹ năng</a>
+    <a href="#contact" class="cta-mobile" onclick="closeMenu()">Liên hệ</a>
+  </nav>
 
-    Tay trong tay đón gió mây<br>
-    Cùng nhau đi hết tháng ngày bình yên<br><br>
-
-    Dẫu cho năm tháng đổi miền<br>
-    Tình anh vẫn vẹn lời nguyền đầu xuân 💕
-    </p>
-  </div>
-  <div class="wish-card">
-    <span class="wish-icon">🌸</span>
-    <p>Năm mới đến rồi, anh muốn chúc em một năm thật mạnh mẽ và rực rỡ. Chặng đường du học Anh chắc chắn sẽ có thử thách, nhưng anh tin với sự thông minh và bản lĩnh của em, em sẽ làm được tất cả. Cảm ơn em vì đã dám theo đuổi ước mơ và không ngừng cố gắng cho tương lai của mình. Dù khoảng cách có xa đến đâu, anh vẫn luôn ở phía sau ủng hộ và tin tưởng em. Mong năm mới mang đến cho em thật nhiều cơ hội, thành công trong học tập và thật nhiều niềm vui nơi đất khách. Và hy vọng rằng, khi em nhìn lại hành trình ấy, sẽ luôn thấy có anh đồng hành trong từng bước trưởng thành của em. 💛</p>
-  </div>
-  <div class="wish-card">
-    <span class="wish-icon">🏮</span>
-    <p>Chúc em năm mới luôn dồi dào sức khỏe, tinh thần an nhiên và thật nhiều năng lượng tích cực. Mong em luôn giữ được sự cân bằng trong cuộc sống, biết yêu thương và chăm sóc bản thân mỗi ngày. Sức khỏe là điều quý giá nhất, vì vậy anh hy vọng em luôn mạnh mẽ, bình an và vui vẻ trong mọi hoàn cảnh. Chỉ cần em khỏe mạnh và hạnh phúc, đó đã là điều ý nghĩa nhất đối với anh.</p>
-  </div>
-  <div class="wish-card">
-    <span class="wish-icon">🎋</span>
-    <p>Chúc cho tình yêu của chúng ta sẽ ngày càng bền chặt và trưởng thành hơn theo thời gian. Dù phía trước còn nhiều thử thách hay thay đổi, anh hy vọng chúng ta luôn giữ được sự tin tưởng, thấu hiểu và trân trọng lẫn nhau. Mong rằng mỗi ngày trôi qua, tình cảm của hai đứa không chỉ là những cảm xúc nhất thời mà là sự đồng hành lâu dài, vững vàng và chân thành. Chúc cho chúng ta luôn đủ bao dung để lắng nghe, đủ kiên nhẫn để cùng nhau vượt qua khó khăn và đủ yêu thương để nắm tay nhau đi thật xa.</p>
-  </div>
-  <div class="wish-card">
-    <span class="wish-icon">💛</span>
-    <p>Chúc Mừng Năm Mới <br> An khang - Thịnh vượng - Phúc - Lộc - Thọ</p>
-  </div>
-  <div class="wishes-footer">
-    <span class="footer-ornament">✦ ✦ ✦</span>
-    Cùng đón nhận điều may mắn phía sau bao lì xì nhé em!<br>
-  </div>
-</div>
-<div id="lixi-section">
-  <div class="lixi-intro">
-    <p class="lixi-above-text">✦ ✦ ✦</p>
-    <h2 class="lixi-title">Nhận Lì Xì May Mắn</h2>
-    <p class="lixi-desc">Chạm vào bao lì xì để nhận phước lành đầu năm</p>
-    <div class="lixi-intro-divider"></div>
-  </div>
-
-  <div class="lixi-envelope" id="lixiEnvelope">
-    <div class="lixi-shine"></div>
-    <div class="lixi-flap">
-      <div class="lixi-flap-inner"></div>
-    </div>
-    <div class="lixi-body">
-      <div class="lixi-border-pattern"></div>
-      <div class="lixi-seal">福</div>
-      <div class="lixi-text-front">
-        <span class="lixi-front-top">CHÚC MỪNG</span>
-        <span class="lixi-front-bottom">NĂM MỚI</span>
-      </div>
-      <div class="lixi-corner lixi-corner-tl"></div>
-      <div class="lixi-corner lixi-corner-tr"></div>
-      <div class="lixi-corner lixi-corner-bl"></div>
-      <div class="lixi-corner lixi-corner-br"></div>
-    </div>
-    <div class="lixi-tap-hint">✦ Chạm để mở ✦</div>
-  </div>
-
-  <div class="lixi-content" id="lixiContent">
-    <div class="lixi-money-reveal">
-      <div class="lixi-congrats">🎊 Chúc Mừng Phát Tài! 🎊</div>
-      <div class="lixi-amount-wrap">
-        <div class="lixi-amount">678.999<span class="lixi-currency">đ</span></div>
-      </div>
-      <div class="lixi-divider-gold"></div>
-      <div class="lixi-meaning">
-        <p class="meaning-title">✦ Ý Nghĩa Con Số May Mắn ✦</p>
-        <div class="meaning-card">
-          <p class="meaning-text"><span class="meaning-number">6</span><span class="meaning-word">Lộc</span>Tài lộc dồi dào, thuận lợi hanh thông</p>
+  <!-- ── HERO ── -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-badge">Đang tìm kiếm cơ hội mới</div>
+        <h1 class="hero-name">Trịnh Đình <span class="accent">Huy</span></h1>
+        <p class="hero-title">Mobile Team Leader · React Native Developer</p>
+        <p class="hero-desc">
+          Tôi xây dựng ứng dụng mobile hiệu suất cao với React Native.
+          6+ năm kinh nghiệm phát triển mobile — từ ứng dụng y tế, thương mại
+          đến giải trí. Hiện dẫn dắt team mobile tại VNext Software.
+        </p>
+        <div class="hero-actions">
+          <a href="#experience" class="btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            Xem Kinh nghiệm
+          </a>
+          <a href="#contact" class="btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Liên hệ ngay
+          </a>
         </div>
-        <div class="meaning-card">
-          <p class="meaning-text"><span class="meaning-number">7</span><span class="meaning-word">Tất</span>Tất cả đều viên mãn, trọn vẹn</p>
-        </div>
-        <div class="meaning-card">
-          <p class="meaning-text"><span class="meaning-number">8</span><span class="meaning-word">Phát</span>Phát đạt, thăng tiến, phát tài</p>
-        </div>
-        <div class="meaning-separator">◆ ◇ ◆</div>
-        <div class="meaning-card meaning-card-wide">
-          <p class="meaning-text"><span class="meaning-number">999</span><span class="meaning-word">Trường Cửu</span>Bền vững, trường tồn mãi mãi</p>
-        </div>
-        <div class="meaning-final">
-          <div class="meaning-final-divider"></div>
-          <p class="meaning-summary-label">Gộp lại, <strong>678.999</strong> mang ý nghĩa:</p>
-          <p class="meaning-summary-text">"Lộc — Tất — Phát, bền vững trường cửu"</p>
-          <p class="meaning-summary-wish">Chúc em năm mới Tài Lộc viên mãn,<br>mọi sự Phát Đạt và hạnh phúc bền lâu mãi mãi! 💛</p>
-          <div class="meaning-final-divider"></div>
+        <div class="hero-social">
+          <a href="https://www.linkedin.com/in/trinhdinhhuy/" class="social-link" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+            LinkedIn
+          </a>
+          <a href="mailto:trinhdinhhuy1998@gmail.com" class="social-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+            trinhdinhhuy1998@gmail.com
+          </a>
+          <a href="tel:0339807373" class="social-link">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            0339 807 373
+          </a>
         </div>
       </div>
+
+      <div class="hero-avatar">
+        <img src="avatar.jpg" alt="Trịnh Đình Huy" style="width:100%;height:100%;object-fit:cover;object-position:center 10%;" />
+      </div>
     </div>
-  </div>
-</div>
-<canvas id="lixi-confetti"></canvas>
-<div id="scroll-hint">↓ Lời chúc gửi tới em ↓</div>
-<!-- <button id="download" onclick="downloadWallpaper()">⬇ Tải ảnh</button> -->
+  </section>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const W = 3840, H = 2160;
-canvas.width = W; canvas.height = H;
+  <div class="divider"></div>
 
-function fitScreen() {
-  const scaleX = window.innerWidth / W;
-  const scaleY = window.innerHeight / H;
-  const scale = Math.max(scaleX, scaleY);
-  canvas.style.width = (W * scale) + 'px';
-  canvas.style.height = (H * scale) + 'px';
-  canvas.style.position = 'absolute';
-  canvas.style.left = ((window.innerWidth - W * scale) / 2) + 'px';
-  canvas.style.top = ((window.innerHeight - H * scale) / 2) + 'px';
-}
-fitScreen();
-window.addEventListener('resize', fitScreen);
+  <!-- ── EXPERIENCE ── -->
+  <section id="experience">
+    <div class="fade-in">
+      <div class="section-label">// lịch sử làm việc</div>
+      <h2 class="section-title">Kinh nghiệm</h2>
+      <p class="section-desc">Những nơi tôi đã làm và những gì tôi đã xây dựng.</p>
+    </div>
 
-function rand(a, b) { return Math.random() * (b - a) + a; }
-function randInt(a, b) { return Math.floor(rand(a, b)); }
+    <div class="timeline">
 
-// ============ STATIC BACKGROUND ============
-const bgCanvas = document.createElement('canvas');
-bgCanvas.width = W; bgCanvas.height = H;
-const bgCtx = bgCanvas.getContext('2d');
+      <!-- ── Dự án cá nhân ── -->
+      <div class="timeline-item fade-in">
+        <div class="timeline-date fade-left delay-100">
+          Dự án cá nhân
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-role">Dự án cá nhân</div>
+          <p class="timeline-desc">
+            Các dự án tự phát triển ngoài giờ làm việc, xuất phát từ nhu cầu thực tế.
+          </p>
 
-function drawStaticScene() {
-  const c = bgCtx;
-  const bg = c.createRadialGradient(W*0.5,H*0.4,H*0.2,W*0.5,H*0.5,H*1.2);
-  bg.addColorStop(0,'#8b1a1a'); bg.addColorStop(0.3,'#6b0f0f'); bg.addColorStop(0.6,'#3d0808'); bg.addColorStop(1,'#1a0000');
-  c.fillStyle=bg; c.fillRect(0,0,W,H);
-  const glow1=c.createRadialGradient(W*0.3,H*0.15,0,W*0.3,H*0.15,H*0.5);
-  glow1.addColorStop(0,'rgba(255,200,50,0.12)'); glow1.addColorStop(0.5,'rgba(255,150,30,0.05)'); glow1.addColorStop(1,'rgba(255,100,0,0)');
-  c.fillStyle=glow1; c.fillRect(0,0,W,H);
-  const glow2=c.createRadialGradient(W*0.75,H*0.3,0,W*0.75,H*0.3,H*0.6);
-  glow2.addColorStop(0,'rgba(255,180,60,0.1)'); glow2.addColorStop(0.4,'rgba(200,80,20,0.04)'); glow2.addColorStop(1,'rgba(0,0,0,0)');
-  c.fillStyle=glow2; c.fillRect(0,0,W,H);
-  for(let i=0;i<5;i++){const fogY=H*(0.5+i*0.1);const fog=c.createLinearGradient(0,fogY-100,0,fogY+200);fog.addColorStop(0,'rgba(255,200,150,0)');fog.addColorStop(0.5,`rgba(255,200,150,${0.02-i*0.003})`);fog.addColorStop(1,'rgba(255,200,150,0)');c.fillStyle=fog;c.fillRect(0,fogY-100,W,300);}
-  for(let i=0;i<60;i++){const x=rand(0,W),y=rand(0,H),r=rand(20,80),a=rand(0.02,0.08);const cols=[`rgba(255,215,0,${a})`,`rgba(255,180,50,${a})`,`rgba(255,100,80,${a})`,`rgba(255,220,150,${a})`];const g=c.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,cols[randInt(0,cols.length)]);g.addColorStop(0.7,`rgba(255,200,100,${a*0.3})`);g.addColorStop(1,'rgba(255,200,100,0)');c.fillStyle=g;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+          <div class="project-cards">
+            <div class="project-inline">
+              <div class="project-inline-name">BetaBox</div>
+              <p class="project-inline-desc">
+                Nền tảng kết nối nhà phát triển cá nhân với tester để kiểm thử ứng dụng —
+                đáp ứng yêu cầu bắt buộc của Google Play trước khi phát hành chính thức. Nhà phát triển sẽ tạo ứng dụng sau đó thanh toán lượt mua ứng dụng sau đó hệ thống sẽ tự động kết nối với tester phù hợp để kiểm thử và cung cấp phản hồi chi tiết về lỗi, hiệu suất và trải nghiệm người dùng. Hiện tại đã có phiên bản dành cho website, với kế hoạch mở rộng sang Android và IOS trong tương lai. Ứng dụng đã nhận được phản hồi tích cực từ cộng đồng nhà phát triển, giúp cải thiện chất lượng ứng dụng trước khi ra mắt chính thức trên Google Play.
+              </p>
+              <a href="https://betabox.tech/" target="_blank" rel="noopener noreferrer" class="website-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                betabox.tech
+              </a>
+            </div>
+          </div>
 
-  function drawBranch(sx,sy,a,l,d,md,col){if(d>md||l<15)return;const ex=sx+Math.cos(a)*l,ey=sy+Math.sin(a)*l;c.beginPath();c.moveTo(sx,sy);c.quadraticCurveTo((sx+ex)/2+rand(-20,20),(sy+ey)/2+rand(-15,15),ex,ey);c.strokeStyle=col;c.lineWidth=Math.max(1.5,(md-d+1)*3.5);c.lineCap='round';c.stroke();const br=d<3?randInt(2,4):randInt(1,3);for(let i=0;i<br;i++)drawBranch(ex,ey,a+rand(-0.6,0.6),l*rand(0.55,0.75),d+1,md,col);}
-  let ends=[];
-  function collectEnds(sx,sy,a,l,d,md){if(d>md||l<15){ends.push({x:sx,y:sy});return;}const ex=sx+Math.cos(a)*l,ey=sy+Math.sin(a)*l;const br=d<3?randInt(2,4):randInt(1,3);for(let i=0;i<br;i++)collectEnds(ex,ey,a+rand(-0.6,0.6),l*rand(0.55,0.75),d+1,md);}
-  function drawBlossom(cx,cy,sz,tp){for(let i=0;i<5;i++){const a=(i/5)*Math.PI*2-Math.PI/2;c.save();c.translate(cx,cy);c.rotate(a);const pg=c.createRadialGradient(0,-sz*0.5,0,0,-sz*0.4,sz*0.7);if(tp==='cherry'){pg.addColorStop(0,'rgba(255,220,230,0.95)');pg.addColorStop(0.5,'rgba(255,150,180,0.9)');pg.addColorStop(1,'rgba(220,80,120,0.6)');}else{pg.addColorStop(0,'rgba(255,245,120,0.95)');pg.addColorStop(0.5,'rgba(255,215,0,0.9)');pg.addColorStop(1,'rgba(218,165,32,0.7)');}c.fillStyle=pg;c.beginPath();c.ellipse(0,tp==='cherry'?-sz*0.5:-sz*0.45,tp==='cherry'?sz*0.35:sz*0.32,tp==='cherry'?sz*0.55:sz*0.5,0,0,Math.PI*2);c.fill();c.restore();}const cg=c.createRadialGradient(cx,cy,0,cx,cy,sz*0.2);if(tp==='cherry'){cg.addColorStop(0,'#fff5a0');cg.addColorStop(0.6,'#ffcc00');cg.addColorStop(1,'#cc8800');}else{cg.addColorStop(0,'#fff');cg.addColorStop(0.5,'#ffeeaa');cg.addColorStop(1,'#cc9900');}c.fillStyle=cg;c.beginPath();c.arc(cx,cy,sz*0.18,0,Math.PI*2);c.fill();for(let i=0;i<6;i++){const sa=rand(0,Math.PI*2),sr=rand(sz*0.12,sz*0.25);c.fillStyle=tp==='cherry'?'rgba(200,150,0,0.7)':'rgba(180,120,0,0.8)';c.beginPath();c.arc(cx+Math.cos(sa)*sr,cy+Math.sin(sa)*sr,2.5,0,Math.PI*2);c.fill();}const gc=tp==='cherry'?'rgba(255,180,200,':'rgba(255,230,80,';const gl=c.createRadialGradient(cx,cy,0,cx,cy,sz*1.5);gl.addColorStop(0,gc+'0.15)');gl.addColorStop(1,gc+'0)');c.fillStyle=gl;c.beginPath();c.arc(cx,cy,sz*1.5,0,Math.PI*2);c.fill();}
+          <div class="timeline-tags">
+            <span class="timeline-tag">NestJS</span>
+            <span class="timeline-tag">Firebase</span>
+            <span class="timeline-tag">TypeScript</span>
+            <span class="timeline-tag">MongoDB</span>
+            <span class="timeline-tag">GraphQL</span>
+          </div>
+        </div>
+      </div>
 
-  ends=[];collectEnds(W*0.08,H*0.55,-Math.PI/4,350,0,5);drawBranch(W*0.08,H*0.55,-Math.PI/4,350,0,5,'#4a2020');
-  for(const e of ends){if(Math.random()>0.3)drawBlossom(e.x+rand(-15,15),e.y+rand(-15,15),rand(18,35),'cherry');}
-  for(let i=0;i<30;i++){if(Math.random()>0.5)drawBlossom(rand(W*0.02,W*0.4),rand(H*0.05,H*0.65),rand(12,28),'cherry');}
-  ends=[];collectEnds(W*0.92,H*0.6,-Math.PI*3/4,320,0,5);drawBranch(W*0.92,H*0.6,-Math.PI*3/4,320,0,5,'#3d2b10');
-  for(const e of ends){if(Math.random()>0.25)drawBlossom(e.x+rand(-12,12),e.y+rand(-12,12),rand(16,32),'apricot');}
-  for(let i=0;i<25;i++){if(Math.random()>0.5)drawBlossom(rand(W*0.6,W*0.98),rand(H*0.08,H*0.6),rand(10,24),'apricot');}
+      <!-- ── VNext Software ── -->
+      <div class="timeline-item fade-in">
+        <div class="timeline-date fade-left delay-100">
+          08/2021 — Hiện tại
+          <div class="current">Hiện tại</div>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-role">Mobile Team Leader</div>
+          <div class="timeline-company">VNext Software</div>
+          <p class="timeline-desc">
+            Dẫn dắt nhóm 4 lập trình viên mobile, phân chia công việc, phân tích yêu cầu từ khách hàng,
+            estimate chức năng, viết native modules và báo cáo trực tiếp với khách hàng.
+            Đảm bảo tiến độ và chất lượng trên nhiều dự án song song.
+          </p>
 
-  function drawLantern(cx,cy,w,h){c.beginPath();c.moveTo(cx,cy-h*0.9);c.lineTo(cx,cy-h*0.5);c.strokeStyle='#8b6914';c.lineWidth=3;c.stroke();const og=c.createRadialGradient(cx,cy,0,cx,cy,Math.max(w,h)*2.5);og.addColorStop(0,'rgba(255,120,30,0.2)');og.addColorStop(0.3,'rgba(255,80,20,0.1)');og.addColorStop(1,'rgba(255,50,0,0)');c.fillStyle=og;c.beginPath();c.arc(cx,cy,Math.max(w,h)*2.5,0,Math.PI*2);c.fill();c.save();c.translate(cx,cy);const bd=c.createRadialGradient(0,0,w*0.1,0,0,w*0.6);bd.addColorStop(0,'#ff4444');bd.addColorStop(0.3,'#ee2222');bd.addColorStop(0.7,'#cc1111');bd.addColorStop(1,'#990000');c.fillStyle=bd;c.beginPath();c.ellipse(0,0,w*0.5,h*0.5,0,0,Math.PI*2);c.fill();const il=c.createRadialGradient(0,-h*0.05,0,0,0,w*0.35);il.addColorStop(0,'rgba(255,255,150,0.5)');il.addColorStop(0.5,'rgba(255,200,50,0.2)');il.addColorStop(1,'rgba(255,100,0,0)');c.fillStyle=il;c.beginPath();c.ellipse(0,-h*0.05,w*0.35,h*0.35,0,0,Math.PI*2);c.fill();c.strokeStyle='rgba(200,150,0,0.5)';c.lineWidth=2;for(let i=-2;i<=2;i++){const ry=i*h*0.12,rx=w*0.5*Math.cos(Math.asin(Math.abs(i)*0.24));c.beginPath();c.ellipse(0,ry,rx,3,0,0,Math.PI*2);c.stroke();}const cp=c.createLinearGradient(-w*0.25,0,w*0.25,0);cp.addColorStop(0,'#b8860b');cp.addColorStop(0.5,'#ffd700');cp.addColorStop(1,'#b8860b');c.fillStyle=cp;c.fillRect(-w*0.25,-h*0.52,w*0.5,h*0.08);c.fillRect(-w*0.2,h*0.46,w*0.4,h*0.06);c.strokeStyle='#ffd700';c.lineWidth=3;const ty=h*0.52;for(let i=-2;i<=2;i++){c.beginPath();c.moveTo(i*8,ty);c.quadraticCurveTo(i*10,ty+h*0.2,i*6,ty+h*0.35);c.stroke();}c.fillStyle='#ffd700';c.beginPath();c.arc(0,ty+h*0.38,8,0,Math.PI*2);c.fill();c.restore();}
-  drawLantern(W*0.25,H*0.2,90,130);drawLantern(W*0.45,H*0.12,110,150);drawLantern(W*0.65,H*0.15,100,140);drawLantern(W*0.8,H*0.22,85,120);drawLantern(W*0.15,H*0.35,55,80);drawLantern(W*0.55,H*0.28,60,85);drawLantern(W*0.88,H*0.38,50,70);
+          <div class="project-cards">
+            <div class="project-inline">
+              <div class="project-inline-name">Miim</div>
+              <p class="project-inline-desc">
+                Ứng dụng giải trí kết hợp âm nhạc, hình ảnh và video trong một gói kỹ thuật số. Người dùng có thể tặng gói như một món quà cho gia đình và bạn bè. Ứng dụng đã được phát hành trên cả iOS và Android, nhận được phản hồi tích cực về trải nghiệm người dùng và tính năng sáng tạo.
+              </p>
+              <div class="store-links">
+                <a href="https://apps.apple.com/vn/app/miim/id1597877286" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.bootrock.miim" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l12.6-7.27-2.73-2.73-10.86 9.86zm-1.7-20.04C1.2 4.08 1 4.6 1 5.22v13.55c0 .62.2 1.14.48 1.5l.08.07 7.59-7.59v-.18L1.56 3.64l-.08.08zm15.85 8.98l-2.17-2.17-2.01 2.01 2.01 2.01 2.19-2.17-.02.32zM4.17.24C3.82.32 3.48.57 3.18.84L14.04 11.7l2.73-2.73L4.17.24z"/></svg>
+                  Google Play
+                </a>
+              </div>
+            </div>
 
-  const vg=c.createRadialGradient(W/2,H/2,H*0.3,W/2,H/2,H*1.1);vg.addColorStop(0,'rgba(0,0,0,0)');vg.addColorStop(0.7,'rgba(0,0,0,0.15)');vg.addColorStop(1,'rgba(0,0,0,0.6)');c.fillStyle=vg;c.fillRect(0,0,W,H);
-}
-drawStaticScene();
+            <div class="project-inline">
+              <div class="project-inline-name">Seacom</div>
+              <p class="project-inline-desc">
+                Ứng dụng kết nối dữ liệu vệ tinh phục vụ ngư dân đánh bắt ngoài khơi — hỗ trợ nhắn tin và gọi điện trong vùng không có sóng di động. Ứng dụng đã được triển khai trên toàn quốc, giúp cải thiện liên lạc và an toàn cho ngư dân.
+              </p>
+              <div class="store-links">
+                <a href="https://apps.apple.com/vn/app/my-seacom/id6743784312" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store
+                </a>
+              </div>
+            </div>
 
-// ============ FALLING PETALS ============
-class FallingPetal {
-  constructor(){this.reset(true);}
-  reset(init){
-    this.x=rand(0,W);this.y=init?rand(-H*0.1,H):rand(-H*0.15,-20);
-    this.size=rand(6,45);this.speedY=rand(0.8,4.0);this.speedX=rand(-0.8,0.8);
-    this.rotation=rand(0,Math.PI*2);this.rotSpeed=rand(-0.02,0.02);
-    this.alpha=rand(0.3,0.8);this.wobbleAmp=rand(0.5,2);
-    this.wobbleSpeed=rand(0.01,0.03);this.wobblePhase=rand(0,Math.PI*2);
-    this.type=Math.random()>0.45?'cherry':'apricot';
-    this.depth=rand(0.4,1);this.size*=this.depth;this.alpha*=this.depth;
-  }
-  update(t){this.y+=this.speedY*this.depth;this.x+=this.speedX+Math.sin(t*this.wobbleSpeed+this.wobblePhase)*this.wobbleAmp;this.rotation+=this.rotSpeed;if(this.y>H+50)this.reset(false);if(this.x<-50)this.x=W+50;if(this.x>W+50)this.x=-50;}
-  draw(){
-    ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.rotation);ctx.globalAlpha=this.alpha;
-    if(this.type==='cherry'){const pg=ctx.createRadialGradient(0,0,0,0,0,this.size);pg.addColorStop(0,'rgba(255,210,220,1)');pg.addColorStop(0.6,'rgba(255,150,180,0.8)');pg.addColorStop(1,'rgba(220,100,140,0.3)');ctx.fillStyle=pg;}
-    else{const pg=ctx.createRadialGradient(0,0,0,0,0,this.size);pg.addColorStop(0,'rgba(255,245,140,1)');pg.addColorStop(0.6,'rgba(255,210,50,0.8)');pg.addColorStop(1,'rgba(200,160,30,0.3)');ctx.fillStyle=pg;}
-    ctx.beginPath();ctx.moveTo(0,-this.size*0.5);ctx.bezierCurveTo(this.size*0.5,-this.size*0.3,this.size*0.4,this.size*0.3,0,this.size*0.5);ctx.bezierCurveTo(-this.size*0.4,this.size*0.3,-this.size*0.5,-this.size*0.3,0,-this.size*0.5);ctx.fill();
-    ctx.globalAlpha=1;ctx.restore();
-  }
-}
-const petals=[];for(let i=0;i<200;i++)petals.push(new FallingPetal());
+            <div class="project-inline">
+              <div class="project-inline-name">NXTech</div>
+              <p class="project-inline-desc">
+                Ứng dụng kết nối điện thoại với thiết bị xét nghiệm y tế thông qua Bluetooth để lấy và lưu trữ kết quả xét nghiệm trực tiếp trên máy. Kết hợp với dữ liệu sức khoẻ trên chính thiết bị của khách hàng để đưa ra phân tích và gợi ý về sức khoẻ.
+              </p>
+            </div>
+          </div>
 
-// ============ LIGHT PARTICLES ============
-class LightParticle {
-  constructor(){this.reset(true);}
-  reset(){this.x=rand(0,W);this.y=rand(0,H);this.r=rand(1.5,5);this.alpha=rand(0.1,0.5);this.pulseSpeed=rand(0.01,0.04);this.pulsePhase=rand(0,Math.PI*2);this.driftX=rand(-0.2,0.2);this.driftY=rand(-0.3,-0.05);}
-  update(t){this.x+=this.driftX;this.y+=this.driftY;this.currentAlpha=this.alpha*(0.5+0.5*Math.sin(t*this.pulseSpeed+this.pulsePhase));if(this.y<-20||this.x<-20||this.x>W+20)this.reset();}
-  draw(){const pg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*4);pg.addColorStop(0,`rgba(255,255,200,${this.currentAlpha})`);pg.addColorStop(0.5,`rgba(255,215,100,${this.currentAlpha*0.4})`);pg.addColorStop(1,'rgba(255,200,100,0)');ctx.fillStyle=pg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*4,0,Math.PI*2);ctx.fill();}
-}
-const lightParticles=[];for(let i=0;i<100;i++)lightParticles.push(new LightParticle());
+          <div class="timeline-tags">
+            <span class="timeline-tag">React Native</span>
+            <span class="timeline-tag">TypeScript</span>
+            <span class="timeline-tag">MobX-State-Tree</span>
+            <span class="timeline-tag">Bluetooth</span>
+            <span class="timeline-tag">Realm</span>
+          </div>
+        </div>
+      </div>
 
-// ============ FIREFLIES ============
-class Firefly {
-  constructor(){this.reset();}
-  reset(){this.x=rand(0,W);this.y=rand(0,H);this.r=rand(2,6);this.alpha=0;this.maxAlpha=rand(0.4,0.9);this.phase=rand(0,Math.PI*2);this.speed=rand(0.015,0.04);this.vx=rand(-0.4,0.4);this.vy=rand(-0.4,0.4);this.life=rand(200,600);this.age=0;this.color=Math.random()>0.5?[255,230,100]:[255,200,150];}
-  update(t){this.age++;this.x+=this.vx+Math.sin(t*0.008+this.phase)*0.3;this.y+=this.vy+Math.cos(t*0.006+this.phase)*0.2;const lr=this.age/this.life;if(lr<0.15)this.alpha=this.maxAlpha*(lr/0.15);else if(lr>0.85)this.alpha=this.maxAlpha*(1-(lr-0.85)/0.15);else this.alpha=this.maxAlpha*(0.7+0.3*Math.sin(t*this.speed+this.phase));if(this.age>this.life||this.x<-50||this.x>W+50||this.y<-50||this.y>H+50)this.reset();}
-  draw(){const[r,g,b]=this.color;const og=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*8);og.addColorStop(0,`rgba(${r},${g},${b},${this.alpha*0.3})`);og.addColorStop(0.4,`rgba(${r},${g},${b},${this.alpha*0.1})`);og.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=og;ctx.beginPath();ctx.arc(this.x,this.y,this.r*8,0,Math.PI*2);ctx.fill();const cg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r);cg.addColorStop(0,`rgba(255,255,240,${this.alpha})`);cg.addColorStop(1,`rgba(${r},${g},${b},${this.alpha*0.5})`);ctx.fillStyle=cg;ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fill();}
-}
-const fireflies=[];for(let i=0;i<40;i++)fireflies.push(new Firefly());
+      <!-- ── Orenda ── -->
+      <div class="timeline-item fade-in">
+        <div class="timeline-date fade-left delay-100">05/2020 — Hiện tại</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Mobile Developer</div>
+          <div class="timeline-company">Orenda Co., LTD — Nhiều dự án</div>
+          <p class="timeline-desc">
+            Tham gia phát triển nhiều ứng dụng trong lĩnh vực y tế. Thực hiện toàn bộ tính năng,
+            đề xuất giải pháp, viết tài liệu RESTFUL APIs và tư vấn trực tiếp với khách hàng.
+          </p>
 
-// ============ EMBERS ============
-class Ember {
-  constructor(){this.reset(true);}
-  reset(init){this.x=rand(0,W);this.y=init?rand(H*0.5,H*1.1):rand(H*0.95,H*1.1);this.r=rand(1,3.5);this.speedY=rand(-0.8,-2.5);this.speedX=rand(-0.3,0.3);this.alpha=rand(0.3,0.8);this.wobblePhase=rand(0,Math.PI*2);this.life=rand(300,700);this.age=0;this.color=[255,randInt(100,200),randInt(0,50)];}
-  update(t){this.age++;this.y+=this.speedY;this.x+=this.speedX+Math.sin(t*0.01+this.wobblePhase)*0.5;this.currentAlpha=this.alpha*(1-this.age/this.life);if(this.age>this.life||this.y<-30)this.reset(false);}
-  draw(){const[r,g,b]=this.color;const eg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3);eg.addColorStop(0,`rgba(255,255,200,${this.currentAlpha})`);eg.addColorStop(0.3,`rgba(${r},${g},${b},${this.currentAlpha*0.6})`);eg.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=eg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*3,0,Math.PI*2);ctx.fill();}
-}
-const embers=[];for(let i=0;i<50;i++)embers.push(new Ember());
+          <div class="project-cards">
+            <div class="project-inline">
+              <div class="project-inline-name">Tiêm chủng Quốc gia</div>
+              <p class="project-inline-desc">
+                Hệ thống cơ sở dữ liệu tiêm chủng quốc gia — quản lý toàn bộ thông tin tiêm chủng
+                của người dân, trẻ em và phụ nữ mang thai. Quản lý xuất nhập vaccine từ trung ương đến xã/phường.
+              </p>
+              <div class="store-links">
+                <a href="https://apps.apple.com/vn/app/smed-express/id1551897890" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.smed.express" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l12.6-7.27-2.73-2.73-10.86 9.86zm-1.7-20.04C1.2 4.08 1 4.6 1 5.22v13.55c0 .62.2 1.14.48 1.5l.08.07 7.59-7.59v-.18L1.56 3.64l-.08.08zm15.85 8.98l-2.17-2.17-2.01 2.01 2.01 2.01 2.19-2.17-.02.32zM4.17.24C3.82.32 3.48.57 3.18.84L14.04 11.7l2.73-2.73L4.17.24z"/></svg>
+                  Google Play
+                </a>
+              </div>
+            </div>
 
-// ============ FOG WISPS ============
-class FogWisp {
-  constructor(){this.reset();}
-  reset(){this.x=rand(-200,W+200);this.y=rand(H*0.6,H);this.w=rand(400,900);this.h=rand(40,100);this.speed=rand(0.2,0.8);this.alpha=rand(0.02,0.06);this.phase=rand(0,Math.PI*2);}
-  update(t){this.x+=this.speed;this.currentAlpha=this.alpha*(0.6+0.4*Math.sin(t*0.005+this.phase));if(this.x>W+500)this.x=-this.w-200;}
-  draw(){const fg=ctx.createRadialGradient(this.x+this.w/2,this.y,10,this.x+this.w/2,this.y,this.w/2);fg.addColorStop(0,`rgba(255,200,150,${this.currentAlpha})`);fg.addColorStop(0.6,`rgba(255,180,120,${this.currentAlpha*0.5})`);fg.addColorStop(1,'rgba(255,150,100,0)');ctx.fillStyle=fg;ctx.beginPath();ctx.ellipse(this.x+this.w/2,this.y,this.w/2,this.h/2,0,0,Math.PI*2);ctx.fill();}
-}
-const fogWisps=[];for(let i=0;i<8;i++)fogWisps.push(new FogWisp());
+            <div class="project-inline">
+              <div class="project-inline-name">Quản Lý Nhà Thuốc PMS</div>
+              <p class="project-inline-desc">
+                Ứng dụng phục vụ nhà thuốc GPP: quản lý kho, xuất nhập hàng hóa,
+                thể hiện trực quan doanh thu. Đã phát hành trên iOS App Store và Google Play.
+              </p>
+              <div class="store-links">
+                <a href="https://apps.apple.com/vn/app/qu%E1%BA%A3n-l%C3%BD-nh%C3%A0-thu%E1%BB%91c-pms/id1442184721" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/apps/details?id=com.gpp" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l12.6-7.27-2.73-2.73-10.86 9.86zm-1.7-20.04C1.2 4.08 1 4.6 1 5.22v13.55c0 .62.2 1.14.48 1.5l.08.07 7.59-7.59v-.18L1.56 3.64l-.08.08zm15.85 8.98l-2.17-2.17-2.01 2.01 2.01 2.01 2.19-2.17-.02.32zM4.17.24C3.82.32 3.48.57 3.18.84L14.04 11.7l2.73-2.73L4.17.24z"/></svg>
+                  Google Play
+                </a>
+              </div>
+            </div>
 
-// ============ LANTERN GLOW PULSE ============
-const lanternPos=[{x:W*0.25,y:H*0.2,s:130},{x:W*0.45,y:H*0.12,s:150},{x:W*0.65,y:H*0.15,s:140},{x:W*0.8,y:H*0.22,s:120},{x:W*0.15,y:H*0.35,s:80},{x:W*0.55,y:H*0.28,s:85},{x:W*0.88,y:H*0.38,s:70}];
-function drawLanternGlows(t){for(const l of lanternPos){const p=0.08+0.06*Math.sin(t*0.03+l.x*0.001);const r=l.s*2.5;const lg=ctx.createRadialGradient(l.x,l.y,0,l.x,l.y,r);lg.addColorStop(0,`rgba(255,140,40,${p})`);lg.addColorStop(0.3,`rgba(255,100,20,${p*0.5})`);lg.addColorStop(1,'rgba(255,80,0,0)');ctx.fillStyle=lg;ctx.beginPath();ctx.arc(l.x,l.y,r,0,Math.PI*2);ctx.fill();}}
+            <div class="project-inline">
+              <div class="project-inline-name">VHealth Manager</div>
+              <p class="project-inline-desc">
+                Ứng dụng quản lý hồ sơ sức khỏe cá nhân — theo dõi lịch sử khám bệnh,
+                kết quả xét nghiệm và hồ sơ bệnh nhân.
+              </p>
+            </div>
 
-// ============ SPARKLES ============
-class Sparkle {
-  constructor(x,y){this.angle=rand(0,Math.PI*2);this.speed=rand(1,5);this.x=x;this.y=y;this.alpha=1;this.decay=rand(0.008,0.02);this.r=rand(1.5,4);this.color=Math.random()>0.5?[255,randInt(180,230),randInt(50,100)]:[255,randInt(200,255),randInt(150,220)];}
-  update(){this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed+0.3;this.speed*=0.97;this.alpha-=this.decay;}
-  draw(){if(this.alpha<=0)return;const[r,g,b]=this.color;ctx.globalAlpha=this.alpha;const sg=ctx.createRadialGradient(this.x,this.y,0,this.x,this.y,this.r*3);sg.addColorStop(0,'rgba(255,255,240,1)');sg.addColorStop(0.4,`rgba(${r},${g},${b},0.8)`);sg.addColorStop(1,`rgba(${r},${g},${b},0)`);ctx.fillStyle=sg;ctx.beginPath();ctx.arc(this.x,this.y,this.r*3,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
-  isDead(){return this.alpha<=0;}
-}
-let sparkles=[];
-const burstPts=[{x:W*0.25,y:H*0.2},{x:W*0.45,y:H*0.12},{x:W*0.65,y:H*0.15},{x:W*0.8,y:H*0.22}];
-let lastBurst=0;
-function spawnBurst(x,y){for(let i=0;i<randInt(12,25);i++)sparkles.push(new Sparkle(x,y));}
+            <div class="project-inline">
+              <div class="project-inline-name">Smed Care</div>
+              <p class="project-inline-desc">
+                Ứng dụng chăm sóc sức khỏe kết nối bệnh nhân với dịch vụ y tế —
+                đặt lịch khám và tư vấn sức khỏe trực tuyến.
+              </p>
+              <div class="store-links">
+                <a href="https://play.google.com/store/apps/details?id=com.smedcare" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l12.6-7.27-2.73-2.73-10.86 9.86zm-1.7-20.04C1.2 4.08 1 4.6 1 5.22v13.55c0 .62.2 1.14.48 1.5l.08.07 7.59-7.59v-.18L1.56 3.64l-.08.08zm15.85 8.98l-2.17-2.17-2.01 2.01 2.01 2.01 2.19-2.17-.02.32zM4.17.24C3.82.32 3.48.57 3.18.84L14.04 11.7l2.73-2.73L4.17.24z"/></svg>
+                  Google Play
+                </a>
+              </div>
+            </div>
+          </div>
 
-// ============ FIREWORKS (PHÁO HOA LỚN) ============
-class FireworkParticle {
-  constructor(x, y, color, type) {
-    // type: 'rocket', 'burst', 'willow', 'sparkle', 'ring'
-    this.x = x; this.y = y;
-    this.color = color;
-    this.type = type;
-    if (type === 'rocket') {
-      this.speedY = rand(-28, -16);
-      this.speedX = rand(-3, 3);
-      this.alpha = 1;
-      this.exploded = false;
-      this.r = 4;
-      this.trail = [];
-      this.trailLen = 15;
-      this.targetY = rand(H * 0.08, H * 0.45);
+          <div class="timeline-tags">
+            <span class="timeline-tag">React Native</span>
+            <span class="timeline-tag">MobX-State-Tree</span>
+            <span class="timeline-tag">Redux-Saga</span>
+            <span class="timeline-tag">Firebase</span>
+            <span class="timeline-tag">TypeScript</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── BeetSoft ── -->
+      <div class="timeline-item fade-in">
+        <div class="timeline-date fade-left delay-100">09/2018 — 04/2019</div>
+        <div class="timeline-content">
+          <div class="timeline-role">Mobile Developer</div>
+          <div class="timeline-company">BeetSoft Co., LTD — Dự án Capitri</div>
+          <p class="timeline-desc">
+            Viết code theo phân công từ Leader, tối ưu để tái sử dụng, tìm và fix bug,
+            nghiên cứu công nghệ mới. Nâng cao tư duy lập trình và kỹ năng teamwork.
+          </p>
+
+          <div class="project-cards">
+            <div class="project-inline">
+              <div class="project-inline-name">Capichi</div>
+              <p class="project-inline-desc">
+                Ứng dụng mạng xã hội chia sẻ video về ẩm thực và du lịch.
+              </p>
+              <div class="store-links">
+                <a href="https://apps.apple.com/vn/app/capichi-delivery-booking/id1554424185" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  App Store
+                </a>
+                <a href="https://play.google.com/store/search?q=capichi&c=apps" target="_blank" rel="noopener noreferrer" class="store-link">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3.18 23.76c.3.17.64.22.99.14l12.6-7.27-2.73-2.73-10.86 9.86zm-1.7-20.04C1.2 4.08 1 4.6 1 5.22v13.55c0 .62.2 1.14.48 1.5l.08.07 7.59-7.59v-.18L1.56 3.64l-.08.08zm15.85 8.98l-2.17-2.17-2.01 2.01 2.01 2.01 2.19-2.17-.02.32zM4.17.24C3.82.32 3.48.57 3.18.84L14.04 11.7l2.73-2.73L4.17.24z"/></svg>
+                  Google Play
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="timeline-tags">
+            <span class="timeline-tag">React Native</span>
+            <span class="timeline-tag">Redux</span>
+            <span class="timeline-tag">Redux-Saga</span>
+            <span class="timeline-tag">Firebase</span>
+            <span class="timeline-tag">Ruby on Rails</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── SKILLS ── -->
+  <section id="skills">
+    <div class="inner">
+      <div class="fade-in">
+        <div class="section-label">// công nghệ sử dụng</div>
+        <h2 class="section-title">Kỹ năng & Công nghệ</h2>
+        <p class="section-desc">Các công nghệ tôi dùng để xây dựng sản phẩm. Tag xanh = ưu tiên sử dụng trước.</p>
+      </div>
+
+      <div class="skills-grid stagger">
+        <div class="skill-category">
+          <div class="skill-category-title">Mobile Framework</div>
+          <div class="skill-tags">
+            <span class="skill-tag primary">React Native</span>
+            <span class="skill-tag primary">TypeScript</span>
+            <span class="skill-tag primary">Flutter</span>
+            <span class="skill-tag">iOS</span>
+            <span class="skill-tag">Android</span>
+          </div>
+        </div>
+
+        <div class="skill-category">
+          <div class="skill-category-title">State Management</div>
+          <div class="skill-tags">
+            <span class="skill-tag primary">MobX-State-Tree</span>
+            <span class="skill-tag primary">Redux</span>
+            <span class="skill-tag">Redux-Saga</span>
+            <span class="skill-tag">Zustand</span>
+          </div>
+        </div>
+
+        <div class="skill-category">
+          <div class="skill-category-title">Backend & Database</div>
+          <div class="skill-tags">
+            <span class="skill-tag primary">Firebase</span>
+            <span class="skill-tag primary">REST API</span>
+            <span class="skill-tag primary">Realm</span>
+            <span class="skill-tag primary">Socket.io</span>
+            <span class="skill-tag">Ruby on Rails</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CONTACT ── -->
+  <section id="contact">
+    <div class="inner">
+      <div class="contact-header fade-in">
+        <div class="section-label">// liên hệ</div>
+        <h2 class="section-title">Hãy cùng làm việc!</h2>
+        <p class="section-desc">
+          Tôi đang mở cửa cho các cơ hội mới — toàn thời gian hoặc freelance.<br/>
+          Đừng ngại liên hệ, tôi rất muốn được lắng nghe bạn.
+        </p>
+      </div>
+
+      <div class="contact-cards stagger">
+        <a href="mailto:trinhdinhhuy1998@gmail.com" class="contact-card">
+          <div class="contact-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+            </svg>
+          </div>
+          <div class="contact-card-label">Email</div>
+          <div class="contact-card-value">trinhdinhhuy1998@gmail.com</div>
+          <span class="contact-card-action">Gửi email →</span>
+        </a>
+
+        <a href="tel:0339807373" class="contact-card">
+          <div class="contact-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.4 2 2 0 0 1 3.6 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.6a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+            </svg>
+          </div>
+          <div class="contact-card-label">Điện thoại</div>
+          <div class="contact-card-value">0339 807 373</div>
+          <span class="contact-card-action">Gọi ngay →</span>
+        </a>
+
+        <a href="https://www.linkedin.com/in/trinhdinhhuy/" class="contact-card" target="_blank" rel="noopener noreferrer">
+          <div class="contact-card-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+          </div>
+          <div class="contact-card-label">LinkedIn</div>
+          <div class="contact-card-value">linkedin.com/in/trinhdinhhuy</div>
+          <span class="contact-card-action">Kết nối →</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="inner">
+      <p class="footer-copy">© 2025 Trịnh Đình Huy</p>
+      <div class="footer-links">
+        <a href="#hero">Lên đầu trang ↑</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── Hamburger menu ──
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    hamburger.addEventListener('click', () => {
+      const isOpen = hamburger.classList.toggle('open');
+      mobileMenu.classList.toggle('open');
+      hamburger.setAttribute('aria-expanded', isOpen);
+    });
+
+    function closeMenu() {
+      hamburger.classList.remove('open');
+      mobileMenu.classList.remove('open');
+      hamburger.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!hamburger.contains(e.target) && !mobileMenu.contains(e.target)) {
+        closeMenu();
+      }
+    });
+
+    // ── Scroll animations ──
+    const prefersMotion = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    const animatedEls = document.querySelectorAll('.fade-in, .fade-left, .scale-in, .stagger');
+    if (prefersMotion) {
+      animatedEls.forEach(el => observer.observe(el));
     } else {
-      this.angle = rand(0, Math.PI * 2);
-      this.speed = type === 'willow' ? rand(4, 20) : type === 'ring' ? rand(12, 18) : rand(5, 22);
-      this.friction = type === 'willow' ? rand(0.97, 0.985) : rand(0.93, 0.97);
-      this.gravity = type === 'willow' ? rand(0.08, 0.2) : rand(0.03, 0.12);
-      this.alpha = 1;
-      this.decay = type === 'willow' ? rand(0.002, 0.006) : type === 'sparkle' ? rand(0.01, 0.025) : rand(0.004, 0.012);
-      this.r = type === 'willow' ? rand(2, 4) : rand(2.5, 6);
-      this.trail = [];
-      this.trailLen = type === 'willow' ? randInt(15, 30) : randInt(5, 14);
-      this.twinkle = type === 'sparkle';
-      this.twinklePhase = rand(0, Math.PI * 2);
-      this.twinkleSpeed = rand(0.2, 0.5);
-      // For ring type, constrain angle spread
-      if (type === 'ring') { this.speed = rand(14, 16); this.friction = 0.96; }
-    }
-  }
-  update(t) {
-    if (this.type === 'rocket') {
-      this.trail.push({ x: this.x, y: this.y });
-      if (this.trail.length > this.trailLen) this.trail.shift();
-      this.x += this.speedX;
-      this.y += this.speedY;
-      this.speedY += 0.25;
-      if (this.y <= this.targetY || this.speedY >= -1) this.exploded = true;
-    } else {
-      this.trail.push({ x: this.x, y: this.y, a: this.alpha });
-      if (this.trail.length > this.trailLen) this.trail.shift();
-      this.speed *= this.friction;
-      this.x += Math.cos(this.angle) * this.speed;
-      this.y += Math.sin(this.angle) * this.speed + this.gravity;
-      this.alpha -= this.decay;
-      if (this.twinkle) {
-        this.twinklePhase += this.twinkleSpeed;
-      }
-    }
-  }
-  draw(t) {
-    if (this.type === 'rocket') {
-      // Rocket trail
-      for (let i = 0; i < this.trail.length; i++) {
-        const tr = this.trail[i];
-        const ta = (i / this.trail.length) * 0.6;
-        const trR = 3 * (i / this.trail.length);
-        ctx.fillStyle = `rgba(255, 200, 100, ${ta})`;
-        ctx.beginPath(); ctx.arc(tr.x, tr.y, trR, 0, Math.PI * 2); ctx.fill();
-      }
-      // Rocket head glow
-      const rg = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 18);
-      rg.addColorStop(0, 'rgba(255,255,230,1)');
-      rg.addColorStop(0.3, 'rgba(255,220,100,0.8)');
-      rg.addColorStop(1, 'rgba(255,150,50,0)');
-      ctx.fillStyle = rg;
-      ctx.beginPath(); ctx.arc(this.x, this.y, 18, 0, Math.PI * 2); ctx.fill();
-      // Sparks from rocket
-      for (let i = 0; i < 3; i++) {
-        const sx = this.x + rand(-8, 8), sy = this.y + rand(5, 20);
-        ctx.fillStyle = `rgba(255,${randInt(180,255)},${randInt(50,150)},${rand(0.3,0.7)})`;
-        ctx.beginPath(); ctx.arc(sx, sy, rand(1, 3), 0, Math.PI * 2); ctx.fill();
-      }
-    } else {
-      const [r, g, b] = this.color;
-      let drawAlpha = this.alpha;
-      if (this.twinkle) {
-        drawAlpha *= (0.3 + 0.7 * Math.abs(Math.sin(this.twinklePhase)));
-      }
-      // Trail with gradient
-      for (let i = 0; i < this.trail.length; i++) {
-        const tr = this.trail[i];
-        const ta = (tr.a || drawAlpha) * (i / this.trail.length) * 0.4;
-        const trR = this.r * 0.6 * (i / this.trail.length);
-        ctx.fillStyle = `rgba(${r},${g},${b},${ta})`;
-        ctx.beginPath(); ctx.arc(tr.x, tr.y, trR, 0, Math.PI * 2); ctx.fill();
-      }
-      // Main particle with big glow
-      const glowR = this.r * (this.type === 'willow' ? 5 : 6);
-      const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glowR);
-      glow.addColorStop(0, `rgba(255,255,255,${drawAlpha * 0.9})`);
-      glow.addColorStop(0.15, `rgba(${r},${g},${b},${drawAlpha * 0.8})`);
-      glow.addColorStop(0.5, `rgba(${r},${g},${b},${drawAlpha * 0.3})`);
-      glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
-      ctx.fillStyle = glow;
-      ctx.beginPath(); ctx.arc(this.x, this.y, glowR, 0, Math.PI * 2); ctx.fill();
-    }
-  }
-  isDead() { return this.type !== 'rocket' ? this.alpha <= 0 : false; }
-}
-
-let fireworks = [];
-let fwRockets = [];
-let flashAlpha = 0; // screen flash on explosion
-const fwColors = [
-  [255, 50, 50], [255, 200, 50], [255, 130, 200], [80, 180, 255],
-  [255, 255, 80], [200, 80, 255], [255, 160, 60], [80, 255, 130],
-  [255, 100, 160], [255, 220, 80], [50, 255, 220], [255, 80, 120],
-  [180, 255, 80], [255, 180, 255],
-];
-
-function launchFirework() {
-  const x = rand(W * 0.08, W * 0.92);
-  fwRockets.push(new FireworkParticle(x, H + 20, [255, 200, 100], 'rocket'));
-}
-
-function explodeFirework(x, y) {
-  // Screen flash
-  flashAlpha = 0.25;
-  // Choose explosion type
-  const types = ['burst', 'burst', 'willow', 'ring', 'sparkle', 'burst'];
-  const type = types[randInt(0, types.length)];
-  const color = fwColors[randInt(0, fwColors.length)];
-
-  if (type === 'burst') {
-    // Big spherical burst
-    const count = randInt(120, 200);
-    for (let i = 0; i < count; i++) {
-      fireworks.push(new FireworkParticle(x, y, color, 'burst'));
-    }
-    // Inner ring different color
-    if (Math.random() > 0.3) {
-      const c2 = fwColors[randInt(0, fwColors.length)];
-      for (let i = 0; i < 50; i++) {
-        const p = new FireworkParticle(x, y, c2, 'burst');
-        p.speed *= 0.4;
-        p.decay *= 0.7;
-        fireworks.push(p);
-      }
-    }
-  } else if (type === 'willow') {
-    // Willow (liễu rủ) - long trailing
-    const count = randInt(80, 150);
-    for (let i = 0; i < count; i++) {
-      fireworks.push(new FireworkParticle(x, y, color, 'willow'));
-    }
-  } else if (type === 'ring') {
-    // Ring explosion - particles in a circle
-    const count = randInt(60, 100);
-    const angleStep = (Math.PI * 2) / count;
-    for (let i = 0; i < count; i++) {
-      const p = new FireworkParticle(x, y, color, 'ring');
-      p.angle = angleStep * i + rand(-0.05, 0.05);
-      fireworks.push(p);
-    }
-    // Fill center with sparkles
-    const c2 = fwColors[randInt(0, fwColors.length)];
-    for (let i = 0; i < 40; i++) {
-      const p = new FireworkParticle(x, y, c2, 'sparkle');
-      p.speed *= 0.3;
-      fireworks.push(p);
-    }
-  } else if (type === 'sparkle') {
-    // Twinkling sparkle explosion
-    const count = randInt(100, 180);
-    for (let i = 0; i < count; i++) {
-      fireworks.push(new FireworkParticle(x, y, color, 'sparkle'));
-    }
-  }
-
-  // Chance of double explosion nearby
-  if (Math.random() > 0.6) {
-    setTimeout(() => {
-      const c3 = fwColors[randInt(0, fwColors.length)];
-      const ox = x + rand(-200, 200), oy = y + rand(-150, 150);
-      const count = randInt(80, 140);
-      for (let i = 0; i < count; i++) {
-        fireworks.push(new FireworkParticle(ox, oy, c3, 'burst'));
-      }
-      flashAlpha = 0.15;
-    }, randInt(100, 300));
-  }
-}
-
-// ============ COUNTDOWN ============
-// Tết Bính Ngọ 2026 (âm lịch): 17/02/2026
-const TET_DATE = new Date('2026-02-17T01:15:00+07:00');
-// const TET_DATE = new Date('2026-02-16T10:44:00+07:00');
-const TET_LABEL = 'BÍNH NGỌ 2026';
-
-let gameState = 'countdown'; // 'countdown' | 'final10' | 'celebrate'
-let lastSecond = -1;
-let numberScale = 1;
-let numberTargetScale = 1;
-let celebrateStartFrame = 0;
-let fwLaunchTimer = 0;
-
-function getCountdown() {
-  const now = new Date();
-  const diff = TET_DATE - now;
-  if (diff <= 0) return { days:0, hours:0, minutes:0, seconds:0, total:0, done:true };
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff / 3600000) % 24);
-  const minutes = Math.floor((diff / 60000) % 60);
-  const seconds = Math.floor((diff / 1000) % 60);
-  return { days, hours, minutes, seconds, total: diff / 1000, done: false };
-}
-
-function drawNormalCountdown(t) {
-  const cd = getCountdown();
-  const cx = W / 2, cy = H / 2;
-
-  // === Outer ambient glow ===
-  const ambientGlow = ctx.createRadialGradient(cx, cy, 100, cx, cy, 900);
-  ambientGlow.addColorStop(0, 'rgba(255,150,30,0.06)');
-  ambientGlow.addColorStop(0.5, 'rgba(255,80,20,0.03)');
-  ambientGlow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = ambientGlow;
-  ctx.fillRect(0, 0, W, H);
-
-  ctx.save();
-
-  // === Title section with decorative elements ===
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-  // Subtitle above title
-  ctx.font = 'bold 36px Georgia, serif';
-  ctx.fillStyle = 'rgba(255,200,100,0.5)';
-  ctx.letterSpacing = '8px';
-  ctx.fillText('— — —  ĐẾM NGƯỢC ĐÓN  — — —', cx, cy - 220);
-
-  // Main title
-  ctx.font = 'bold 72px Georgia, serif';
-  const titleGlow = 20 + 8 * Math.sin(t * 0.04);
-  ctx.shadowColor = 'rgba(255,180,0,0.7)';
-  ctx.shadowBlur = titleGlow;
-  const titleGrad = ctx.createLinearGradient(cx - 400, 0, cx + 400, 0);
-  titleGrad.addColorStop(0, '#f5c842');
-  titleGrad.addColorStop(0.3, '#ffe88a');
-  titleGrad.addColorStop(0.5, '#fff5c8');
-  titleGrad.addColorStop(0.7, '#ffe88a');
-  titleGrad.addColorStop(1, '#f5c842');
-  ctx.fillStyle = titleGrad;
-  ctx.fillText(`TẾT ${TET_LABEL}`, cx, cy - 155);
-  ctx.shadowBlur = 0;
-
-  // Decorative line under title
-  const lineAlpha = 0.4 + 0.2 * Math.sin(t * 0.05);
-  ctx.strokeStyle = `rgba(255,200,50,${lineAlpha})`;
-  ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(cx - 350, cy - 108); ctx.lineTo(cx - 60, cy - 108); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx + 60, cy - 108); ctx.lineTo(cx + 350, cy - 108); ctx.stroke();
-  // Center diamond
-  ctx.fillStyle = `rgba(255,200,50,${lineAlpha + 0.1})`;
-  ctx.save(); ctx.translate(cx, cy - 108); ctx.rotate(Math.PI / 4);
-  ctx.fillRect(-6, -6, 12, 12); ctx.restore();
-  // Side dots
-  ctx.fillStyle = `rgba(255,200,50,${lineAlpha})`;
-  ctx.beginPath(); ctx.arc(cx - 355, cy - 108, 3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + 355, cy - 108, 3, 0, Math.PI * 2); ctx.fill();
-
-  // === Number boxes ===
-  const boxData = [{v: cd.days, l: 'NGÀY'}, {v: cd.hours, l: 'GIỜ'}, {v: cd.minutes, l: 'PHÚT'}, {v: cd.seconds, l: 'GIÂY'}];
-  const bW = 240, bH = 260, gap = 55;
-  const totalBW = boxData.length * bW + (boxData.length - 1) * gap;
-  const sx = cx - totalBW / 2, bY = cy - 65;
-
-  boxData.forEach((item, i) => {
-    const bx = sx + i * (bW + gap), bcx = bx + bW / 2, bcy = bY + bH / 2;
-    const br = 22;
-
-    // Box shadow (outer glow)
-    const boxGlow = ctx.createRadialGradient(bcx, bcy, 0, bcx, bcy, bW * 0.85);
-    boxGlow.addColorStop(0, 'rgba(255,150,30,0.06)');
-    boxGlow.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle = boxGlow;
-    ctx.beginPath(); ctx.arc(bcx, bcy, bW * 0.85, 0, Math.PI * 2); ctx.fill();
-
-    // Box background - glass effect
-    const bg = ctx.createLinearGradient(bx, bY, bx, bY + bH);
-    bg.addColorStop(0, 'rgba(140,15,15,0.65)');
-    bg.addColorStop(0.4, 'rgba(100,8,8,0.75)');
-    bg.addColorStop(0.6, 'rgba(80,5,5,0.8)');
-    bg.addColorStop(1, 'rgba(60,3,3,0.7)');
-    ctx.fillStyle = bg;
-    // Rounded rect path
-    ctx.beginPath();
-    ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
-    ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
-    ctx.lineTo(bx + bW, bY + bH - br);
-    ctx.quadraticCurveTo(bx + bW, bY + bH, bx + bW - br, bY + bH);
-    ctx.lineTo(bx + br, bY + bH);
-    ctx.quadraticCurveTo(bx, bY + bH, bx, bY + bH - br);
-    ctx.lineTo(bx, bY + br);
-    ctx.quadraticCurveTo(bx, bY, bx + br, bY);
-    ctx.closePath();
-    ctx.fill();
-
-    // Border - gold gradient
-    const borderGrad = ctx.createLinearGradient(bx, bY, bx + bW, bY + bH);
-    borderGrad.addColorStop(0, 'rgba(255,220,80,0.5)');
-    borderGrad.addColorStop(0.5, 'rgba(255,180,50,0.2)');
-    borderGrad.addColorStop(1, 'rgba(255,220,80,0.5)');
-    ctx.strokeStyle = borderGrad; ctx.lineWidth = 2; ctx.stroke();
-
-    // Top highlight reflection
-    const hl = ctx.createLinearGradient(bx, bY, bx, bY + bH * 0.35);
-    hl.addColorStop(0, 'rgba(255,255,220,0.1)');
-    hl.addColorStop(1, 'rgba(255,255,220,0)');
-    ctx.fillStyle = hl;
-    ctx.beginPath();
-    ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
-    ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
-    ctx.lineTo(bx + bW, bY + bH * 0.35);
-    ctx.lineTo(bx, bY + bH * 0.35);
-    ctx.lineTo(bx, bY + br);
-    ctx.quadraticCurveTo(bx, bY, bx + br, bY);
-    ctx.closePath(); ctx.fill();
-
-    // Inner top gold line accent
-    const topLine = ctx.createLinearGradient(bx + bW * 0.2, 0, bx + bW * 0.8, 0);
-    topLine.addColorStop(0, 'rgba(255,200,50,0)');
-    topLine.addColorStop(0.5, 'rgba(255,200,50,0.5)');
-    topLine.addColorStop(1, 'rgba(255,200,50,0)');
-    ctx.strokeStyle = topLine; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(bx + bW * 0.15, bY + 1); ctx.lineTo(bx + bW * 0.85, bY + 1); ctx.stroke();
-
-    // Seconds box special pulsing border
-    if (i === 3) {
-      const secPulse = 0.3 + 0.3 * Math.sin(t * 0.1);
-      ctx.strokeStyle = `rgba(255,200,50,${secPulse})`;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(bx + br, bY); ctx.lineTo(bx + bW - br, bY);
-      ctx.quadraticCurveTo(bx + bW, bY, bx + bW, bY + br);
-      ctx.lineTo(bx + bW, bY + bH - br);
-      ctx.quadraticCurveTo(bx + bW, bY + bH, bx + bW - br, bY + bH);
-      ctx.lineTo(bx + br, bY + bH);
-      ctx.quadraticCurveTo(bx, bY + bH, bx, bY + bH - br);
-      ctx.lineTo(bx, bY + br);
-      ctx.quadraticCurveTo(bx, bY, bx + br, bY);
-      ctx.closePath(); ctx.stroke();
+      animatedEls.forEach(el => el.classList.add('visible'));
     }
 
-    // Number with scale animation for seconds
-    const pulse = i === 3 ? 1 + 0.04 * Math.sin(t * 0.12) : 1;
-    ctx.save(); ctx.translate(bcx, bcy - 18); ctx.scale(pulse, pulse);
-    ctx.font = 'bold 130px Georgia, serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-    // Number gradient fill
-    const numGrad = ctx.createLinearGradient(0, -60, 0, 60);
-    numGrad.addColorStop(0, '#fff5d0');
-    numGrad.addColorStop(0.4, '#ffd700');
-    numGrad.addColorStop(1, '#d4a017');
-    ctx.fillStyle = numGrad;
-    ctx.shadowColor = 'rgba(255,200,0,0.7)';
-    ctx.shadowBlur = 20;
-    ctx.fillText(String(item.v).padStart(2, '0'), 0, 0);
-    ctx.shadowBlur = 0;
-    ctx.restore();
-
-    // Label with elegant styling
-    ctx.font = 'bold 30px Georgia, serif';
-    ctx.textAlign = 'center';
-    const labelGrad = ctx.createLinearGradient(bcx - 50, 0, bcx + 50, 0);
-    labelGrad.addColorStop(0, 'rgba(255,200,120,0.5)');
-    labelGrad.addColorStop(0.5, 'rgba(255,220,170,0.9)');
-    labelGrad.addColorStop(1, 'rgba(255,200,120,0.5)');
-    ctx.fillStyle = labelGrad;
-    ctx.fillText(item.l, bcx, bY + bH - 32);
-
-    // Small label underline
-    ctx.strokeStyle = 'rgba(255,200,50,0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(bcx - 35, bY + bH - 18); ctx.lineTo(bcx + 35, bY + bH - 18); ctx.stroke();
-
-    // Colon separator with glow
-    if (i < boxData.length - 1) {
-      const colX = bx + bW + gap / 2;
-      const ca = 0.5 + 0.5 * Math.sin(t * 0.08);
-      ctx.font = 'bold 80px Georgia, serif';
-      ctx.fillStyle = `rgba(255,200,80,${ca})`;
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.shadowColor = `rgba(255,180,50,${ca * 0.5})`;
-      ctx.shadowBlur = 10;
-      // Two dots instead of colon for elegance
-      ctx.beginPath(); ctx.arc(colX, bcy - 35, 8, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(colX, bcy + 25, 8, 0, Math.PI * 2); ctx.fill();
-      ctx.shadowBlur = 0;
-    }
-  });
-
-  // === Bottom decorative text ===
-  ctx.font = '32px Georgia, serif';
-  ctx.textAlign = 'center';
-  ctx.fillStyle = 'rgba(255,200,100,0.35)';
-  ctx.fillText('Năm Bính Ngọ • 2026', cx, bY + bH + 55);
-
-  ctx.restore();
-}
-
-// ============ FINAL 10 SECONDS ============
-let final10Particles = [];
-
-class CountdownParticle {
-  constructor(x, y) {
-    this.x = x; this.y = y;
-    this.angle = rand(0, Math.PI * 2);
-    this.speed = rand(3, 12);
-    this.alpha = 1;
-    this.decay = rand(0.015, 0.035);
-    this.r = rand(2, 6);
-    this.color = [255, randInt(150, 255), randInt(0, 100)];
-    this.gravity = rand(0.05, 0.15);
-  }
-  update() {
-    this.x += Math.cos(this.angle) * this.speed;
-    this.y += Math.sin(this.angle) * this.speed + this.gravity;
-    this.speed *= 0.96;
-    this.alpha -= this.decay;
-  }
-  draw() {
-    if (this.alpha <= 0) return;
-    const [r, g, b] = this.color;
-    const glow = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 3);
-    glow.addColorStop(0, `rgba(255,255,240,${this.alpha})`);
-    glow.addColorStop(0.4, `rgba(${r},${g},${b},${this.alpha * 0.6})`);
-    glow.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    ctx.fillStyle = glow;
-    ctx.beginPath(); ctx.arc(this.x, this.y, this.r * 3, 0, Math.PI * 2); ctx.fill();
-  }
-  isDead() { return this.alpha <= 0; }
-}
-
-function drawFinal10(t, secondsLeft) {
-  const cx = W / 2, cy = H / 2;
-  const curSec = Math.ceil(secondsLeft);
-
-  // Lerp scale
-  numberScale += (numberTargetScale - numberScale) * 0.15;
-
-  // Dark cinematic overlay with breathing
-  const darkPulse = 0.45 + 0.08 * Math.sin(t * 0.06);
-  ctx.fillStyle = `rgba(0, 0, 0, ${darkPulse})`;
-  ctx.fillRect(0, 0, W, H);
-
-  // Radial light behind everything
-  const bgGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, 550);
-  bgGlow.addColorStop(0, 'rgba(255,120,20,0.12)');
-  bgGlow.addColorStop(0.4, 'rgba(255,80,10,0.05)');
-  bgGlow.addColorStop(1, 'rgba(0,0,0,0)');
-  ctx.fillStyle = bgGlow;
-  ctx.beginPath(); ctx.arc(cx, cy, 550, 0, Math.PI * 2); ctx.fill();
-
-  ctx.save();
-  ctx.translate(cx, cy);
-
-  // === Outer decorative ring ===
-  const outerR = 420;
-  const outerAlpha = 0.15 + 0.08 * Math.sin(t * 0.04);
-  ctx.strokeStyle = `rgba(255,180,50,${outerAlpha})`;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([15, 20]);
-  ctx.beginPath(); ctx.arc(0, 0, outerR, 0, Math.PI * 2); ctx.stroke();
-  ctx.setLineDash([]);
-
-  // === Main progress ring ===
-  const ringR = 360;
-  // Background ring
-  ctx.strokeStyle = 'rgba(255,200,50,0.12)';
-  ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.arc(0, 0, ringR, 0, Math.PI * 2); ctx.stroke();
-
-  // Progress arc with gradient
-  const progress = (10 - secondsLeft) / 10;
-  const endAngle = -Math.PI / 2 + progress * Math.PI * 2;
-
-  // Glowing progress track
-  ctx.lineWidth = 10;
-  ctx.strokeStyle = '#ffd700';
-  ctx.shadowColor = 'rgba(255,200,0,0.8)';
-  ctx.shadowBlur = 25;
-  ctx.beginPath(); ctx.arc(0, 0, ringR, -Math.PI / 2, endAngle); ctx.stroke();
-  ctx.shadowBlur = 0;
-
-  // Progress head dot
-  const headX = Math.cos(endAngle) * ringR;
-  const headY = Math.sin(endAngle) * ringR;
-  const headGlow = ctx.createRadialGradient(headX, headY, 0, headX, headY, 25);
-  headGlow.addColorStop(0, 'rgba(255,255,220,0.9)');
-  headGlow.addColorStop(0.4, 'rgba(255,200,50,0.5)');
-  headGlow.addColorStop(1, 'rgba(255,200,50,0)');
-  ctx.fillStyle = headGlow;
-  ctx.beginPath(); ctx.arc(headX, headY, 25, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#fff8e0';
-  ctx.beginPath(); ctx.arc(headX, headY, 6, 0, Math.PI * 2); ctx.fill();
-
-  // === Inner thin ring ===
-  const innerR = 300;
-  ctx.strokeStyle = 'rgba(255,200,50,0.08)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.arc(0, 0, innerR, 0, Math.PI * 2); ctx.stroke();
-
-  // === Tick marks on ring ===
-  for (let i = 0; i < 10; i++) {
-    const a = -Math.PI / 2 + (i / 10) * Math.PI * 2;
-    const innerTick = ringR - 20;
-    const outerTick = ringR + 20;
-    const isPassed = i / 10 < progress;
-    ctx.strokeStyle = isPassed ? 'rgba(255,200,50,0.6)' : 'rgba(255,200,50,0.15)';
-    ctx.lineWidth = isPassed ? 3 : 1.5;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * innerTick, Math.sin(a) * innerTick);
-    ctx.lineTo(Math.cos(a) * outerTick, Math.sin(a) * outerTick);
-    ctx.stroke();
-  }
-
-  ctx.restore();
-
-  // === Spawn particles on number change ===
-  final10Particles = final10Particles.filter(p => !p.isDead());
-  for (const p of final10Particles) { p.update(); p.draw(); }
-
-  // === The big number ===
-  ctx.save();
-  ctx.translate(cx, cy);
-  ctx.scale(numberScale, numberScale);
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.font = 'bold 420px Georgia, serif';
-
-  // Number with gradient
-  const numGrad = ctx.createLinearGradient(0, -200, 0, 200);
-  numGrad.addColorStop(0, '#fff8e0');
-  numGrad.addColorStop(0.3, '#ffd700');
-  numGrad.addColorStop(0.7, '#e6b800');
-  numGrad.addColorStop(1, '#cc9900');
-  ctx.fillStyle = numGrad;
-  ctx.shadowColor = 'rgba(255,200,0,0.9)';
-  ctx.shadowBlur = 80;
-  ctx.fillText(String(curSec), 0, 15);
-
-  // Second layer for text outline
-  ctx.shadowBlur = 0;
-  ctx.strokeStyle = 'rgba(255,255,200,0.15)';
-  ctx.lineWidth = 2;
-  ctx.strokeText(String(curSec), 0, 15);
-  ctx.restore();
-
-  // === Labels ===
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-  // Top label
-  ctx.font = 'bold 42px Georgia, serif';
-  ctx.fillStyle = 'rgba(255,220,150,0.5)';
-  ctx.fillText('— SẮP ĐẾN RỒI —', cx, cy - 300);
-
-  // Bottom label
-  ctx.font = 'bold 52px Georgia, serif';
-  const labelGrad = ctx.createLinearGradient(cx - 300, 0, cx + 300, 0);
-  labelGrad.addColorStop(0, 'rgba(255,200,100,0.3)');
-  labelGrad.addColorStop(0.5, 'rgba(255,220,150,0.8)');
-  labelGrad.addColorStop(1, 'rgba(255,200,100,0.3)');
-  ctx.fillStyle = labelGrad;
-  ctx.fillText('CHÀO ĐÓN TẾT ' + TET_LABEL, cx, cy + 300);
-
-  // Small decorative line under label
-  ctx.strokeStyle = 'rgba(255,200,50,0.3)';
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(cx - 200, cy + 330); ctx.lineTo(cx + 200, cy + 330); ctx.stroke();
-}
-
-// ============ CELEBRATE SCREEN ============
-function drawCelebrate(t) {
-  const cx = W / 2, cy = H * 0.42;
-  const elapsed = t - celebrateStartFrame;
-  const fadeIn = Math.min(1, elapsed / 60);
-
-  // Launch fireworks - MASSIVE amount, rapid fire
-  fwLaunchTimer++;
-  // Barrage at start
-  if (elapsed < 120) {
-    if (fwLaunchTimer % 4 === 0) launchFirework();
-    if (fwLaunchTimer % 6 === 0) launchFirework();
-  } else {
-    // Continuous steady stream
-    if (fwLaunchTimer % 8 === 0) launchFirework();
-    if (fwLaunchTimer % 12 === 0) launchFirework();
-    if (fwLaunchTimer % 18 === 0 && Math.random() > 0.3) launchFirework();
-    // Occasional burst of 3 at once
-    if (fwLaunchTimer % 90 === 0) { launchFirework(); launchFirework(); launchFirework(); }
-  }
-
-  // Update & draw rockets
-  for (let i = fwRockets.length - 1; i >= 0; i--) {
-    fwRockets[i].update(t);
-    fwRockets[i].draw(t);
-    if (fwRockets[i].exploded) {
-      explodeFirework(fwRockets[i].x, fwRockets[i].y);
-      fwRockets.splice(i, 1);
-    }
-  }
-
-  // Update & draw firework particles
-  fireworks = fireworks.filter(p => !p.isDead());
-  for (const p of fireworks) { p.update(t); p.draw(t); }
-
-  // Flash effect on explosion
-  if (flashAlpha > 0) {
-    ctx.fillStyle = `rgba(255, 240, 200, ${flashAlpha})`;
-    ctx.fillRect(0, 0, W, H);
-    flashAlpha *= 0.88;
-    if (flashAlpha < 0.005) flashAlpha = 0;
-  }
-
-  // Warm overlay for text readability
-  const textBg = ctx.createRadialGradient(cx, cy, 80, cx, cy, 800);
-  textBg.addColorStop(0, `rgba(40,5,5,${0.5 * fadeIn})`);
-  textBg.addColorStop(0.6, `rgba(30,3,3,${0.25 * fadeIn})`);
-  textBg.addColorStop(1, 'rgba(30,3,3,0)');
-  ctx.fillStyle = textBg;
-  ctx.beginPath(); ctx.arc(cx, cy, 800, 0, Math.PI * 2); ctx.fill();
-
-  // Title glow layers
-  const tg1 = ctx.createRadialGradient(cx, cy - 40, 0, cx, cy - 40, 500);
-  tg1.addColorStop(0, `rgba(255,200,50,${0.18 * fadeIn})`);
-  tg1.addColorStop(0.5, `rgba(255,150,30,${0.06 * fadeIn})`);
-  tg1.addColorStop(1, 'rgba(255,100,0,0)');
-  ctx.fillStyle = tg1;
-  ctx.beginPath(); ctx.arc(cx, cy - 40, 500, 0, Math.PI * 2); ctx.fill();
-
-  ctx.save();
-  ctx.globalAlpha = fadeIn;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-
-  // === Top decorative ornament ===
-  const ornAlpha = 0.4 + 0.15 * Math.sin(t * 0.04);
-  ctx.fillStyle = `rgba(255,200,50,${ornAlpha})`;
-  ctx.font = '40px Georgia, serif';
-  ctx.fillText('✦   ✦   ✦', cx, cy - 260);
-
-  // === Decorative lines above title ===
-  ctx.strokeStyle = `rgba(255,200,50,${ornAlpha * 0.6})`;
-  ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(cx - 450, cy - 230); ctx.lineTo(cx - 100, cy - 230); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(cx + 100, cy - 230); ctx.lineTo(cx + 450, cy - 230); ctx.stroke();
-
-  // === Main title with dramatic styling ===
-  const bounce = elapsed < 90 ? 1 + 0.12 * Math.sin(elapsed * 0.12) * Math.max(0, 1 - elapsed / 90) : 1;
-  const glowPulse = 40 + 20 * Math.sin(t * 0.05);
-
-  ctx.save();
-  ctx.translate(cx, cy - 80);
-  ctx.scale(bounce, bounce);
-
-  // Title gradient
-  const titleGrad = ctx.createLinearGradient(-500, -120, 500, 120);
-  titleGrad.addColorStop(0, '#e6a800');
-  titleGrad.addColorStop(0.2, '#ffd700');
-  titleGrad.addColorStop(0.4, '#fff5c8');
-  titleGrad.addColorStop(0.6, '#ffe88a');
-  titleGrad.addColorStop(0.8, '#ffd700');
-  titleGrad.addColorStop(1, '#e6a800');
-
-  ctx.font = 'bold 170px Georgia, serif';
-  ctx.fillStyle = titleGrad;
-  ctx.shadowColor = 'rgba(255,200,0,0.9)';
-  ctx.shadowBlur = glowPulse;
-
-  // Subtle outline
-  ctx.strokeStyle = 'rgba(255,250,200,0.2)';
-  ctx.lineWidth = 2;
-  ctx.strokeText('CHÚC MỪNG', 0, -95);
-  ctx.strokeText('NĂM MỚI', 0, 95);
-  ctx.fillText('CHÚC MỪNG', 0, -95);
-  ctx.fillText('NĂM MỚI', 0, 95);
-  ctx.shadowBlur = 0;
-  ctx.restore();
-
-  // === Decorative separator ===
-  const lineAlpha = 0.5 + 0.2 * Math.sin(t * 0.04);
-  // Left ornamental line
-  const lineGradL = ctx.createLinearGradient(cx - 500, 0, cx - 80, 0);
-  lineGradL.addColorStop(0, 'rgba(255,200,50,0)');
-  lineGradL.addColorStop(0.3, `rgba(255,200,50,${lineAlpha * 0.3})`);
-  lineGradL.addColorStop(1, `rgba(255,200,50,${lineAlpha})`);
-  ctx.strokeStyle = lineGradL; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(cx - 500, cy + 55); ctx.lineTo(cx - 80, cy + 55); ctx.stroke();
-
-  // Right ornamental line
-  const lineGradR = ctx.createLinearGradient(cx + 80, 0, cx + 500, 0);
-  lineGradR.addColorStop(0, `rgba(255,200,50,${lineAlpha})`);
-  lineGradR.addColorStop(0.7, `rgba(255,200,50,${lineAlpha * 0.3})`);
-  lineGradR.addColorStop(1, 'rgba(255,200,50,0)');
-  ctx.strokeStyle = lineGradR; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(cx + 80, cy + 55); ctx.lineTo(cx + 500, cy + 55); ctx.stroke();
-
-  // Center diamond
-  ctx.fillStyle = `rgba(255,200,50,${lineAlpha + 0.1})`;
-  ctx.save(); ctx.translate(cx, cy + 55); ctx.rotate(Math.PI / 4);
-  ctx.fillRect(-9, -9, 18, 18); ctx.restore();
-
-  // Side dots
-  ctx.fillStyle = `rgba(255,200,50,${lineAlpha * 0.6})`;
-  ctx.beginPath(); ctx.arc(cx - 60, cy + 55, 3, 0, Math.PI * 2); ctx.fill();
-  ctx.beginPath(); ctx.arc(cx + 60, cy + 55, 3, 0, Math.PI * 2); ctx.fill();
-
-  // === Subtitle ===
-  ctx.font = 'bold 76px Georgia, serif';
-  const subGrad = ctx.createLinearGradient(cx - 400, 0, cx + 400, 0);
-  subGrad.addColorStop(0, 'rgba(255,200,100,0.4)');
-  subGrad.addColorStop(0.5, 'rgba(255,230,170,0.95)');
-  subGrad.addColorStop(1, 'rgba(255,200,100,0.4)');
-  ctx.fillStyle = subGrad;
-  ctx.shadowColor = 'rgba(255,150,0,0.5)';
-  ctx.shadowBlur = 20;
-  ctx.fillText(`✦  TẾT ${TET_LABEL}  ✦`, cx, cy + 165);
-  ctx.shadowBlur = 0;
-
-  // === Year text ===
-  ctx.font = '44px Georgia, serif';
-  ctx.fillStyle = 'rgba(255,200,100,0.55)';
-  ctx.fillText('Năm Bính Ngọ — 2026', cx, cy + 250);
-
-  // === Bottom ornament ===
-  ctx.fillStyle = `rgba(255,200,50,${ornAlpha * 0.5})`;
-  ctx.font = '30px Georgia, serif';
-  ctx.fillText('◆ ◇ ◆', cx, cy + 310);
-
-  ctx.globalAlpha = 1;
-  ctx.restore();
-}
-
-// ============ ANIMATION LOOP ============
-let frame = 0;
-
-function animate() {
-  frame++;
-  const cd = getCountdown();
-
-  // State transitions
-  if (cd.done && gameState !== 'celebrate') {
-    gameState = 'celebrate';
-    celebrateStartFrame = frame;
-    document.getElementById('wishes').style.display = 'block';
-    document.getElementById('lixi-section').style.display = 'block';
-    document.getElementById('scroll-hint').style.display = 'block';
-    document.getElementById('fw-overlay').style.display = 'block';
-    overlayActive = true;
-    document.body.style.overflowY = 'auto';
-  } else if (!cd.done && cd.total <= 10 && gameState === 'countdown') {
-    gameState = 'final10';
-  }
-
-  // Detect second change for final10 pop effect
-  if (gameState === 'final10') {
-    const curSec = Math.ceil(cd.total);
-    if (curSec !== lastSecond) {
-      lastSecond = curSec;
-      numberTargetScale = 1.35;
-      setTimeout(() => { numberTargetScale = 1; }, 180);
-      // Spawn burst particles around the number
-      const burstCx = W / 2, burstCy = H / 2;
-      for (let i = 0; i < 30; i++) {
-        final10Particles.push(new CountdownParticle(burstCx + rand(-80, 80), burstCy + rand(-80, 80)));
-      }
-    }
-  }
-
-  ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(bgCanvas, 0, 0);
-
-  // Always draw ambient effects
-  drawLanternGlows(frame);
-  for (const f of fogWisps) { f.update(frame); f.draw(); }
-  for (const e of embers) { e.update(frame); e.draw(); }
-  for (const p of petals) { p.update(frame); p.draw(); }
-  for (const p of lightParticles) { p.update(frame); p.draw(); }
-  for (const f of fireflies) { f.update(frame); f.draw(); }
-
-  // Sparkle bursts
-  if (frame - lastBurst > 180) {
-    const bp = burstPts[randInt(0, burstPts.length)];
-    spawnBurst(bp.x, bp.y);
-    lastBurst = frame;
-  }
-  sparkles = sparkles.filter(s => !s.isDead());
-  for (const s of sparkles) { s.update(); s.draw(); }
-
-  // State-specific rendering
-  if (gameState === 'countdown') {
-    drawNormalCountdown(frame);
-  } else if (gameState === 'final10') {
-    drawFinal10(frame, cd.total);
-  } else if (gameState === 'celebrate') {
-    drawCelebrate(frame);
-  }
-
-  requestAnimationFrame(animate);
-}
-
-animate();
-
-// ============ FIREWORK OVERLAY (covers entire page including wishes) ============
-const fwCanvas = document.getElementById('fw-overlay');
-const fwCtx = fwCanvas.getContext('2d');
-
-let overlayFW = [];
-let overlayRockets = [];
-let overlayFlash = 0;
-let overlayActive = false;
-
-function resizeOverlay() {
-  fwCanvas.width = window.innerWidth;
-  fwCanvas.height = window.innerHeight;
-}
-resizeOverlay();
-window.addEventListener('resize', resizeOverlay);
-
-class OverlayRocket {
-  constructor() {
-    this.x = rand(window.innerWidth * 0.1, window.innerWidth * 0.9);
-    this.y = window.innerHeight + 10;
-    this.speedY = rand(-14, -8);
-    this.speedX = rand(-1.5, 1.5);
-    this.targetY = rand(window.innerHeight * 0.1, window.innerHeight * 0.4);
-    this.exploded = false;
-    this.trail = [];
-  }
-  update() {
-    this.trail.push({ x: this.x, y: this.y });
-    if (this.trail.length > 12) this.trail.shift();
-    this.x += this.speedX;
-    this.y += this.speedY;
-    this.speedY += 0.12;
-    if (this.y <= this.targetY || this.speedY >= -1) this.exploded = true;
-  }
-  draw() {
-    for (let i = 0; i < this.trail.length; i++) {
-      const t = this.trail[i];
-      const a = (i / this.trail.length) * 0.5;
-      fwCtx.fillStyle = `rgba(255,200,100,${a})`;
-      fwCtx.beginPath(); fwCtx.arc(t.x, t.y, 2 * (i / this.trail.length), 0, Math.PI * 2); fwCtx.fill();
-    }
-    const rg = fwCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, 10);
-    rg.addColorStop(0, 'rgba(255,255,230,0.9)');
-    rg.addColorStop(1, 'rgba(255,200,100,0)');
-    fwCtx.fillStyle = rg;
-    fwCtx.beginPath(); fwCtx.arc(this.x, this.y, 10, 0, Math.PI * 2); fwCtx.fill();
-  }
-}
-
-class OverlayParticle {
-  constructor(x, y, color, type) {
-    this.x = x; this.y = y;
-    this.color = color;
-    this.angle = rand(0, Math.PI * 2);
-    this.speed = type === 'willow' ? rand(2, 10) : rand(3, 12);
-    this.friction = type === 'willow' ? 0.975 : rand(0.94, 0.97);
-    this.gravity = type === 'willow' ? rand(0.04, 0.1) : rand(0.02, 0.08);
-    this.alpha = 1;
-    this.decay = type === 'willow' ? rand(0.003, 0.007) : rand(0.006, 0.015);
-    this.r = rand(1.5, 3.5);
-    this.trail = [];
-    this.trailLen = type === 'willow' ? 12 : 6;
-    this.twinkle = type === 'sparkle';
-    this.twinklePhase = rand(0, Math.PI * 2);
-    if (type === 'ring') { this.speed = rand(7, 9); this.friction = 0.96; }
-  }
-  update() {
-    this.trail.push({ x: this.x, y: this.y, a: this.alpha });
-    if (this.trail.length > this.trailLen) this.trail.shift();
-    this.speed *= this.friction;
-    this.x += Math.cos(this.angle) * this.speed;
-    this.y += Math.sin(this.angle) * this.speed + this.gravity;
-    this.alpha -= this.decay;
-    if (this.twinkle) this.twinklePhase += 0.3;
-  }
-  draw() {
-    if (this.alpha <= 0) return;
-    const [r, g, b] = this.color;
-    let da = this.alpha;
-    if (this.twinkle) da *= (0.3 + 0.7 * Math.abs(Math.sin(this.twinklePhase)));
-    for (let i = 0; i < this.trail.length; i++) {
-      const t = this.trail[i];
-      const ta = (t.a || da) * (i / this.trail.length) * 0.3;
-      fwCtx.fillStyle = `rgba(${r},${g},${b},${ta})`;
-      fwCtx.beginPath(); fwCtx.arc(t.x, t.y, this.r * 0.4, 0, Math.PI * 2); fwCtx.fill();
-    }
-    const glR = this.r * 4;
-    const gl = fwCtx.createRadialGradient(this.x, this.y, 0, this.x, this.y, glR);
-    gl.addColorStop(0, `rgba(255,255,255,${da * 0.8})`);
-    gl.addColorStop(0.2, `rgba(${r},${g},${b},${da * 0.7})`);
-    gl.addColorStop(0.6, `rgba(${r},${g},${b},${da * 0.2})`);
-    gl.addColorStop(1, `rgba(${r},${g},${b},0)`);
-    fwCtx.fillStyle = gl;
-    fwCtx.beginPath(); fwCtx.arc(this.x, this.y, glR, 0, Math.PI * 2); fwCtx.fill();
-  }
-  isDead() { return this.alpha <= 0; }
-}
-
-function overlayExplode(x, y) {
-  overlayFlash = 0.2;
-  const color = fwColors[randInt(0, fwColors.length)];
-  const types = ['burst', 'burst', 'willow', 'ring', 'sparkle'];
-  const type = types[randInt(0, types.length)];
-  const count = type === 'ring' ? 50 : randInt(60, 120);
-
-  if (type === 'ring') {
-    const step = (Math.PI * 2) / count;
-    for (let i = 0; i < count; i++) {
-      const p = new OverlayParticle(x, y, color, 'ring');
-      p.angle = step * i;
-      overlayFW.push(p);
-    }
-    const c2 = fwColors[randInt(0, fwColors.length)];
-    for (let i = 0; i < 25; i++) { const p = new OverlayParticle(x, y, c2, 'sparkle'); p.speed *= 0.3; overlayFW.push(p); }
-  } else {
-    for (let i = 0; i < count; i++) overlayFW.push(new OverlayParticle(x, y, color, type));
-  }
-  // Inner color
-  if (Math.random() > 0.4) {
-    const c2 = fwColors[randInt(0, fwColors.length)];
-    for (let i = 0; i < 30; i++) { const p = new OverlayParticle(x, y, c2, 'burst'); p.speed *= 0.35; overlayFW.push(p); }
-  }
-}
-
-let overlayTimer = 0;
-function animateOverlay() {
-  if (!overlayActive) { requestAnimationFrame(animateOverlay); return; }
-  overlayTimer++;
-  fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-
-  // Launch
-  if (overlayTimer % 25 === 0) overlayRockets.push(new OverlayRocket());
-  if (overlayTimer % 40 === 0 && Math.random() > 0.4) overlayRockets.push(new OverlayRocket());
-  if (overlayTimer % 100 === 0) { overlayRockets.push(new OverlayRocket()); overlayRockets.push(new OverlayRocket()); }
-
-  // Update rockets
-  for (let i = overlayRockets.length - 1; i >= 0; i--) {
-    overlayRockets[i].update();
-    overlayRockets[i].draw();
-    if (overlayRockets[i].exploded) {
-      overlayExplode(overlayRockets[i].x, overlayRockets[i].y);
-      overlayRockets.splice(i, 1);
-    }
-  }
-
-  // Update particles
-  overlayFW = overlayFW.filter(p => !p.isDead());
-  for (const p of overlayFW) { p.update(); p.draw(); }
-
-  // Flash
-  if (overlayFlash > 0) {
-    fwCtx.fillStyle = `rgba(255,240,200,${overlayFlash})`;
-    fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
-    overlayFlash *= 0.85;
-    if (overlayFlash < 0.005) overlayFlash = 0;
-  }
-
-  requestAnimationFrame(animateOverlay);
-}
-animateOverlay();
-
-// ============ SCROLL REVEAL WISHES ============
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) e.target.classList.add('visible');
-  });
-}, { threshold: 0.15 });
-document.querySelectorAll('.wish-card').forEach(c => observer.observe(c));
-
-// Hide scroll hint after scrolling
-window.addEventListener('scroll', () => {
-  if (window.scrollY > 100) {
-    document.getElementById('scroll-hint').style.opacity = '0';
-  }
-});
-
-// ============ DOWNLOAD ============
-function downloadWallpaper() {
-  const link = document.createElement('a');
-  link.download = 'tet-2026-wallpaper.png';
-  link.href = canvas.toDataURL('image/png');
-  link.click();
-}
-
-// ============ LÌ XÌ ============
-const lixiConfettiCanvas = document.getElementById('lixi-confetti');
-const lixiConfettiCtx = lixiConfettiCanvas.getContext('2d');
-let lixiConfettiParticles = [];
-let lixiConfettiActive = false;
-let lixiOpened = false;
-
-function resizeLixiConfetti() {
-  lixiConfettiCanvas.width = window.innerWidth;
-  lixiConfettiCanvas.height = window.innerHeight;
-}
-resizeLixiConfetti();
-window.addEventListener('resize', resizeLixiConfetti);
-
-class ConfettiPiece {
-  constructor() {
-    this.x = rand(0, window.innerWidth);
-    this.y = rand(-window.innerHeight * 0.3, -20);
-    this.w = rand(8, 16);
-    this.h = rand(6, 14);
-    this.speedY = rand(2, 6);
-    this.speedX = rand(-1.5, 1.5);
-    this.rotation = rand(0, Math.PI * 2);
-    this.rotSpeed = rand(-0.1, 0.1);
-    this.wobbleAmp = rand(0.5, 2);
-    this.wobbleSpeed = rand(0.02, 0.06);
-    this.wobblePhase = rand(0, Math.PI * 2);
-    this.alpha = 1;
-    this.type = Math.random() > 0.5 ? 'rect' : 'circle';
-    // Festive colors
-    const colors = [
-      [255, 215, 0],    // gold
-      [255, 50, 50],    // red
-      [255, 180, 50],   // orange
-      [255, 100, 150],  // pink
-      [255, 255, 100],  // yellow
-      [255, 80, 80],    // bright red
-      [255, 160, 0],    // amber
-      [200, 50, 50],    // dark red
-    ];
-    this.color = colors[randInt(0, colors.length)];
-  }
-  update(t) {
-    this.y += this.speedY;
-    this.x += this.speedX + Math.sin(t * this.wobbleSpeed + this.wobblePhase) * this.wobbleAmp;
-    this.rotation += this.rotSpeed;
-    if (this.y > window.innerHeight + 30) this.alpha = 0;
-  }
-  draw() {
-    if (this.alpha <= 0) return;
-    const [r, g, b] = this.color;
-    lixiConfettiCtx.save();
-    lixiConfettiCtx.translate(this.x, this.y);
-    lixiConfettiCtx.rotate(this.rotation);
-    lixiConfettiCtx.globalAlpha = this.alpha;
-    lixiConfettiCtx.fillStyle = `rgb(${r},${g},${b})`;
-    if (this.type === 'rect') {
-      lixiConfettiCtx.fillRect(-this.w / 2, -this.h / 2, this.w, this.h);
-    } else {
-      lixiConfettiCtx.beginPath();
-      lixiConfettiCtx.arc(0, 0, this.w / 2, 0, Math.PI * 2);
-      lixiConfettiCtx.fill();
-    }
-    lixiConfettiCtx.globalAlpha = 1;
-    lixiConfettiCtx.restore();
-  }
-  isDead() { return this.alpha <= 0; }
-}
-
-let confettiFrame = 0;
-function animateConfetti() {
-  if (!lixiConfettiActive) { requestAnimationFrame(animateConfetti); return; }
-  confettiFrame++;
-  lixiConfettiCtx.clearRect(0, 0, lixiConfettiCanvas.width, lixiConfettiCanvas.height);
-
-  // Spawn confetti in first few seconds
-  if (confettiFrame < 180) {
-    for (let i = 0; i < 4; i++) {
-      lixiConfettiParticles.push(new ConfettiPiece());
-    }
-    if (confettiFrame < 30) {
-      for (let i = 0; i < 8; i++) {
-        lixiConfettiParticles.push(new ConfettiPiece());
-      }
-    }
-  }
-
-  lixiConfettiParticles = lixiConfettiParticles.filter(p => !p.isDead());
-  for (const p of lixiConfettiParticles) {
-    p.update(confettiFrame);
-    p.draw();
-  }
-
-  // Stop when all done
-  if (confettiFrame > 180 && lixiConfettiParticles.length === 0) {
-    lixiConfettiActive = false;
-    lixiConfettiCanvas.style.display = 'none';
-  }
-
-  requestAnimationFrame(animateConfetti);
-}
-animateConfetti();
-
-// Click handler for the envelope
-document.getElementById('lixiEnvelope').addEventListener('click', function() {
-  if (lixiOpened) return;
-  lixiOpened = true;
-
-  const envelope = this;
-  envelope.classList.add('opened');
-
-  // Trigger confetti
-  lixiConfettiCanvas.style.display = 'block';
-  lixiConfettiActive = true;
-  confettiFrame = 0;
-
-  // Show content after a delay
-  setTimeout(() => {
-    const content = document.getElementById('lixiContent');
-    content.classList.add('show');
-
-    // Smooth scroll to content
-    setTimeout(() => {
-      content.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 300);
-  }, 600);
-
-  // Shrink and fade envelope
-  setTimeout(() => {
-    envelope.style.transition = 'all 0.8s ease';
-    envelope.style.transform = 'scale(0.6)';
-    envelope.style.opacity = '0.3';
-    envelope.style.marginBottom = '-100px';
-  }, 1200);
-});
-</script>
+    // ── Active nav highlight ──
+    const sections = document.querySelectorAll('section[id]');
+    const navLinks = document.querySelectorAll('.nav-links a');
+
+    const navObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const id = entry.target.id;
+          navLinks.forEach(a => {
+            const active = a.getAttribute('href') === `#${id}`;
+            a.style.color = active ? 'var(--black)' : '';
+            a.style.fontWeight = active ? '700' : '';
+            a.style.background = active ? 'var(--gray-100)' : '';
+          });
+        }
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+
+    sections.forEach(s => navObserver.observe(s));
+  </script>
 </body>
 </html>
